@@ -9,6 +9,11 @@
 import XCTest
 @testable import R0Kit
 
+class Testing : Decodable, Encodable {
+  var one : Int
+  var two : String
+  init() {one = 12; two = "maybe"}
+}
 class R0KitTests: XCTestCase {
     
     override func setUp() {
@@ -24,6 +29,13 @@ class R0KitTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
+      let t = Testing()
+      t.one = 33
+      t.two = "blessed"
+      let z = RecordEncoder("Clem", "nam", CKRecordZone(zoneName: "Warby").zoneID)
+      do { try [t].encode(to: z)
+      } catch { print(error) }
+      print(z)
     }
     
     func testPerformanceExample() {
