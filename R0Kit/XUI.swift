@@ -1,6 +1,3 @@
-//
-//  Copyright © 2017 Warby Parker. All rights reserved.
-//
 
 import CommonCrypto
 

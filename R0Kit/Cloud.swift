@@ -72,7 +72,7 @@ public func repeatCursor(db : CKDatabase, zoneID zid: CKRecordZoneID, query qry 
   db.add(op)
 }
 
-public func findZone(_ db : CKDatabase) -> CKRecordZoneID? {
+public func findZone(_ db : CKDatabase, _ nam : String) -> CKRecordZoneID? {
   var rz : CKRecordZoneID?
   
   let dq = DispatchSemaphore(value: 0)
@@ -82,7 +82,7 @@ public func findZone(_ db : CKDatabase) -> CKRecordZoneID? {
     }
     if let recordZones = recordZone {
       // Here you'll have an array of CKRecordZone that is in your SharedDB!
-      rz = recordZones.first(where: {$0.zoneID.zoneName == "WarbyZone"})?.zoneID
+      rz = recordZones.first(where: {$0.zoneID.zoneName == nam})?.zoneID
       if (rz == nil) {
         print("couldn't figure out the zoneID for product catalog")
       }

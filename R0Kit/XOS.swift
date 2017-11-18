@@ -1,6 +1,3 @@
-//
-//  Copyright © 2017 Warby Parker. All rights reserved.
-//
 
 // Definitions to make iOS and macOS closer than they are.  This allows for more code sharing
 
