@@ -4,6 +4,49 @@
 
 import CloudKit
 
+public extension RawRepresentable where Self : Recordable {
+  public var recordValue : CKRecordValue { return self.rawValue as! CKRecordValue }
+  public static func from(recordValue: CKRecordValue) -> Self {
+    return Self.init(rawValue: recordValue as! Self.RawValue)!
+  }
+}
+
+public protocol Recordable {
+  var recordValue : CKRecordValue { get }
+  static func from(recordValue: CKRecordValue) -> Self
+}
+
+extension Set : Recordable {
+  public var recordValue : CKRecordValue { get {
+    return (self.map { $0 as! CKRecordValue }) as CKRecordValue
+    }}
+  public static func from(recordValue: CKRecordValue) -> Set<Element> {
+    if let a = recordValue as? Array<Element> {
+      return Set<Element>(a)
+    }
+    fatalError("Set from RecordValue not yet implemented")
+  }
+}
+/*public protocol RecordEncodable {}
+
+public extension RecordEncodable where Self: RawRepresentable, Self.RawValue: CKRecordValue {
+  func box() -> CKRecordValue {
+    return rawValue
+  }
+}*/
+
+/*public protocol Encodable {
+  
+  func encode() -> Encoder
+}*/
+
+/*public extension Encodable where Self: RawRepresentable, Self.RawValue: Encodable {
+  
+  public func encode() -> Data? {
+    return rawValue.encode()
+  }
+}*/
+
 public class RecordEncoder : Encoder {
   public var record: CKRecord
 
@@ -16,6 +59,10 @@ public class RecordEncoder : Encoder {
   
   public init<T>(_ m : T, _ zid : CKRecordZoneID) where T : DataModel {
     record = CKRecord.init(recordType: m.name, recordID: CKRecordID.init(recordName: m.getKey(), zoneID: zid ))
+  }
+  
+  public init(record: inout CKRecord) {
+    self.record = record
   }
 
   func encode(_ value: Bool) throws {
@@ -45,11 +92,19 @@ public class RecordEncoder : Encoder {
     
     var codingPath: [CodingKey] { return [] }
     
-    func encode<T>(_ value: T, forKey key: Key) throws where T : Encodable {
-      try encoder.record[key.stringValue] = value as! CKRecordValue 
+    func encode<T>(_ valu: T, forKey key: Key) throws where T : Encodable {
+      var t : CKRecordValue
+      if let v = valu as? Recordable {
+        t = v.recordValue
+      } else {
+        t = valu as! CKRecordValue
+      }
+      encoder.record[key.stringValue] = t
     }
     
-    func encodeNil(forKey key: Key) throws {}
+    func encodeNil(forKey key: Key) throws {
+      encoder.record[key.stringValue] = nil
+    }
     
     func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
       return encoder.container(keyedBy: keyType)
@@ -90,7 +145,7 @@ public class RecordEncoder : Encoder {
     
     func encode<T>(_ value: T) throws where T : Encodable {
       throw NSError.init(domain: "clem", code: 3)
-      try encoder.encode(value)
+      // try encoder.encode(value)
     }
   }
 }

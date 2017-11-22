@@ -30,13 +30,15 @@ public protocol DataModel : Codable {
   static var _singleton : [String : Self] { get set } // = [String:FrameCollection]()
 
   // create an instance from a CKRecord
-  init?(record : CKRecord)
-    
+  // use fromRecord instead
+  // init?(record : CKRecord)
+  
   // return the key from the object
   func getKey() -> String
 }
 
 extension DataModel {
+  
   public static func watch(using block: @escaping (Notification) -> Void) {
     NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: Self.name), object: nil, queue: nil, using: block)
   }
@@ -97,9 +99,17 @@ extension DataModel {
     
     let fo = CKFetchRecordsOperation(recordIDs: candidates.values.map { CKRecordID(recordName: $0.getKey(), zoneID: zid) } )
     fo.perRecordCompletionBlock = { rec, rid, err in
-      if let rr = rec,
+      if var rr = rec,
         let r = candidates[rr.recordID.recordName] {
-        r.modify(record: rr)
+        
+        do {
+          try r.encode(to: RecordEncoder(record: &rr))
+        } catch {
+          print(error)
+        }
+        // let z = RecordEncoder(name, r.getKey(), zid)
+        // r.modify(record: rr)
+
         pendingUpdates.append(rr)
         candidates.removeValue(forKey: rr.recordID.recordName)
       } else {
@@ -187,20 +197,46 @@ extension DataModel {
   }
   
   public func toRecord(_ zid : CKRecordZoneID) -> CKRecord {
-    let r = CKRecord(recordType: name, recordID: CKRecordID(recordName: getKey(), zoneID: zid))
-    modify(record: r)
+    var r = CKRecord(recordType: name, recordID: CKRecordID(recordName: getKey(), zoneID: zid))
+
+    do {
+      try self.encode(to: RecordEncoder(record: &r))
+    } catch {
+      print(error)
+    }
+
+    
+    // modify(record: r)
     return r
+  }
+  
+  public static func fromRecord(_ record : CKRecord) -> Self? {
+    do {
+      return try RecordDecoder(record).decode(Self.self)
+    } catch {
+      print(error)
+      return nil
+    }
   }
 }
 
 extension DataModel {
-  public func modify(record rr: CKRecord) {
+/*  public func modify(record rr: CKRecord) {
     let m = Mirror(reflecting: self)
     
     for case let (label?, value) in m.children {
       print("mirror \(label)")
       rr[label] = value as? CKRecordValue
     }
+  }
+ */
+  
+  // this downloads (and stores locally) the iCloud table by running a query
+  public static func fromICloud(db : CKDatabase, zoneID zid: CKRecordZoneID ) {
+    let query = CKQuery(recordType: name, predicate: NSPredicate(value: true))
+    repeatCursor(db : db, zoneID: zid, query: query,
+                 recordHandler: { Self.fromRecord($0)?.cache() },
+                 blockHandler: {}, completionHandler: Self.save )
   }
 }
 

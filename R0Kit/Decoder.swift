@@ -40,6 +40,19 @@ public class RecordDecoder : Decoder {
   }
 }
 
+public class DataModelError : Error {
+  var msg : String
+  init(_ m : String) {
+    msg = m
+  }
+  
+  var localizedDescription : String { get {
+    return msg
+    }
+    
+  }
+}
+
 fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContainerProtocol {
   var decoder : RecordDecoder
   var codingPath: [CodingKey] { return [] }
@@ -50,12 +63,20 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
   }
   
   func decodeNil(forKey key: Key) throws -> Bool {
-    return true
+    let v = decoder.record[key.stringValue]
+    return v == nil
   }
   
   func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
     // return try decoder.decode(T.self)
-    return decoder.record[key.stringValue] as! T
+    let v = decoder.record[key.stringValue]
+    if type is Recordable.Type {
+      return (type as! Recordable.Type).from(recordValue: v!) as! T
+    } else if let z = v as? T {
+      return z
+    } else {
+      throw DataModelError("nil value for \(key)")
+    }
   }
   
   func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
