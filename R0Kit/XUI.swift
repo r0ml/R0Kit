@@ -68,7 +68,14 @@ extension Notification {
   public static func errorReport(_ m : String, _ err : Error?) {
     if let e = err {
       os_log("%@: %@", type: .error, m, e.localizedDescription)
-      let noti = Notification( name: .errorReport, object: nil, userInfo: ["msg":m, "err": e.localizedDescription])
+      var mmm = e.localizedDescription
+      if let ee = e as? CKError {
+        if let mm = ee.userInfo["NSUnderlyingError"] as? NSError {
+          mmm = mm.localizedDescription
+        }
+        
+      }
+      let noti = Notification( name: .errorReport, object: nil, userInfo: ["msg":m, "err": mmm])
       NotificationCenter.default.post(noti)
     }
   }
@@ -86,7 +93,7 @@ extension Notification {
   }
   
   public static func registerError(_ tf : Label) {
-    NotificationCenter.default.addObserver(forName: Notification.Name.statusUpdate, object: nil, queue: nil) { noti in
+    NotificationCenter.default.addObserver(forName: Notification.Name.errorReport, object: nil, queue: nil) { noti in
       DispatchQueue.main.async {
         tf.textColor = Color.red
         tf.text = "\(noti.userInfo?["msg"] as? String ?? "") error: \(noti.userInfo?["err"] as? String ?? "unknown")"

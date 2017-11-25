@@ -2,21 +2,26 @@
 //  Copyright © 2017 Semasiology. All rights reserved.
 //
 
-import CloudKit
+// This is used to represent a hierarchy of parent-child records as the result of a decoding
+// in theory, this allows writing the whole tree up to iCloud.
+// perhaps I could have a "base" containing multiple types to represent the entire nested
+// structure, rather than a separate "base" for each record type.
 
-public extension RawRepresentable where Self : Recordable {
+// I could represet the entire zone by an object -- and have each record type in the zone.
+
+public extension RawRepresentable where Self : HTMLable {
   public var recordValue : CKRecordValue { return self.rawValue as! CKRecordValue }
   public static func from(recordValue: CKRecordValue) -> Self {
     return Self.init(rawValue: recordValue as! Self.RawValue)!
   }
 }
 
-public protocol Recordable {
-  var recordValue : CKRecordValue { get }
-  static func from(recordValue: CKRecordValue) -> Self
+public protocol HTMLable {
+  var htmlValue : String { get }
+  static func from(htmlValue: String) -> Self
 }
 
-extension Set : Recordable {
+/*extension Set : HTMLable {
   public var recordValue : CKRecordValue { get {
     return (self.map { $0 as! CKRecordValue }) as CKRecordValue
     }}
@@ -24,86 +29,80 @@ extension Set : Recordable {
     if let a = recordValue as? Array<Element> {
       return Set<Element>(a)
     }
-    fatalError("Set from RecordValue not yet implemented")
-  }
-}
-/*public protocol RecordEncodable {}
-
-public extension RecordEncodable where Self: RawRepresentable, Self.RawValue: CKRecordValue {
-  func box() -> CKRecordValue {
-    return rawValue
+    fatalError("Set from CKRecordValue not yet implemented")
   }
 }*/
 
-/*public protocol Encodable {
-  
-  func encode() -> Encoder
-}*/
-
-/*public extension Encodable where Self: RawRepresentable, Self.RawValue: Encodable {
-  
-  public func encode() -> Data? {
-    return rawValue.encode()
-  }
-}*/
-
-public class RecordEncoder : Encoder {
-  public var record: CKRecord
-
+public class HTMLEncoder : Encoder {
+  public var html : String
   public var codingPath: [CodingKey] { return [] }
   public var userInfo: [CodingUserInfoKey : Any] { return [:] }
   
-  public init(_ s : String, _ n : String, _ zid : CKRecordZoneID) {
-    record = CKRecord.init(recordType: s, recordID: CKRecordID.init(recordName: n, zoneID: zid))
+  public init() {
+    html = ""
   }
   
-  public init<T>(_ m : T, _ zid : CKRecordZoneID) where T : DataModel {
-    record = CKRecord.init(recordType: m.name, recordID: CKRecordID.init(recordName: m.getKey(), zoneID: zid ))
-  }
-  
-  public init(record: inout CKRecord) {
-    self.record = record
-  }
-
   func encode(_ value: Bool) throws {
     try encode(value ? 1 as UInt8 : 0 as UInt8)
   }
   
   func encode(_ encodable: Encodable) throws {
     switch encodable {
-      default: try encodable.encode(to: self)
+    default: try encodable.encode(to: self)
     }
   }
-
+  
   public func container<Key>(keyedBy type: Key.Type) -> KeyedEncodingContainer<Key> where Key : CodingKey {
     return KeyedEncodingContainer(KeyedContainer<Key>(encoder: self))
   }
   
   public func unkeyedContainer() -> UnkeyedEncodingContainer {
-    return RecordUnkeyedContainer(encoder: self)
+    return HTMLUnkeyedContainer(encoder: self)
   }
   
   public func singleValueContainer() -> SingleValueEncodingContainer {
-    return RecordUnkeyedContainer(encoder: self)
+    return HTMLUnkeyedContainer(encoder: self)
   }
   
   private struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
-    var encoder: RecordEncoder
-    
+    var encoder: HTMLEncoder
     var codingPath: [CodingKey] { return [] }
     
+    func encode<T: RawRepresentable>(_ valv: T, forKey key: Key) throws  where T.RawValue : Encodable {
+      try encode(valv.rawValue, forKey: key)
+    }
+    
+    
     func encode<T>(_ valu: T, forKey key: Key) throws where T : Encodable {
-      var t : CKRecordValue
-      if let v = valu as? Recordable {
-        t = v.recordValue
+
+      /*
+ '&' => "&amp;"
+ '"' => "&quot;"
+ '\'' => "&#39;"
+ '>' => "&gt;"
+ '<' => "&lt;"
+ */
+      if key.stringValue == "encodedSystemFields" { return }
+      
+      
+      if let v = valu as? LosslessStringConvertible {
+        // encoder.html.append("<td>\(key.stringValue)</td><td>\(String(describing: v))</td>")
+        encoder.html.append("<td>\(String(describing: v))</td>")
+      } else if let v = valu as? Array<LosslessStringConvertible> {
+        let j = v.map { "<td>\(String(describing: $0))</td>" }
+        let k = j.joined()
+        // let m = "<td><table><tr>\(k)</tr></table></td>"
+        let m = k // .appending("<td></td>")
+        encoder.html.append(m)
+      } else if let v = valu as? CustomStringConvertible {
+        encoder.html.append("<td>\(String(describing: v))</td>")
       } else {
-        t = valu as! CKRecordValue
+        print("failed to html encode \(valu) for \(key.stringValue)")
       }
-      encoder.record[key.stringValue] = t
     }
     
     func encodeNil(forKey key: Key) throws {
-      encoder.record[key.stringValue] = nil
+      encoder.html.append("<td></td>")
     }
     
     func nestedContainer<NestedKey>(keyedBy keyType: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> where NestedKey : CodingKey {
@@ -123,8 +122,8 @@ public class RecordEncoder : Encoder {
     }
   }
   
-  private struct RecordUnkeyedContainer: UnkeyedEncodingContainer, SingleValueEncodingContainer {
-    var encoder: RecordEncoder
+  private struct HTMLUnkeyedContainer: UnkeyedEncodingContainer, SingleValueEncodingContainer {
+    var encoder: HTMLEncoder
     
     var codingPath: [CodingKey] { return [] }
     var count: Int { return 0 }
@@ -149,4 +148,5 @@ public class RecordEncoder : Encoder {
     }
   }
 }
+
 

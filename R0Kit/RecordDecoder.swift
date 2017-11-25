@@ -14,16 +14,7 @@ public class RecordDecoder : Decoder {
   
   func decode<T: Decodable>(_ type: T.Type) throws -> T {
     switch type {
-      /*case is Int.Type:
-      let c = record[record.index(record.startIndex, offsetBy: cursor)]
-      cursor+=2
-      return Int(String(c)) as! T
-
-    case is String.Type:
-      let c = record[record.index(record.startIndex, offsetBy: cursor)..<record.endIndex]
-      cursor = record.count
-      return String(c) as! T */
-    default:    return try T.init(from: self)
+    default: return try T.init(from: self)
     }
   }
   
@@ -67,16 +58,28 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
     return v == nil
   }
   
-  func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T : Decodable {
+  func decode<T>(_ typ: T.Type, forKey key: Key) throws -> T where T : Decodable {
     // return try decoder.decode(T.self)
-    let v = decoder.record[key.stringValue]
-    if type is Recordable.Type {
-      return (type as! Recordable.Type).from(recordValue: v!) as! T
-    } else if let z = v as? T {
-      return z
+    
+    // if the field I'm being asked to decode is an array of DataModel -- then this is the parent, and those are the children.
+    // so here, the parent will be childless
+    print(typ)
+    
+    if let v = decoder.record[key.stringValue] {
+      if typ is CKRecordValuable.Type {
+        return (typ as! CKRecordValuable.Type).from(recordValue: v) as! T
+      } else if let z = v as? T {
+        return z
+      }
     } else {
-      throw DataModelError("nil value for \(key)")
+      if typ is Clem.Type { // the subrecord is not available in the record
+        // we could a) go get the subrecords
+        // b) ignore the subrecords
+        // c) look for the subrecords somewhere else in the decoder
+        return (typ as! Clem.Type).init() as! T
+      }
     }
+    throw DataModelError("nil value for \(key)")
   }
   
   func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {

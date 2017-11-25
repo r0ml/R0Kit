@@ -172,28 +172,6 @@ extension Transcript : TableViewDataSource {
       return nil
     }
   }
-  
-  /*
-  public func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
-    switch tableColumn!.identifier.rawValue {
-    case "Msg":
-      return lines[row]
-    default:
-      return nil
-    }
-  }*/
-  
-  /*
-  public func tableView(_ tableView: NSTableView, willDisplayCell cell: Any, for tableColumn: NSTableColumn?, row: Int) {
-    if let x = cell as? NSTextFieldCell {
-      x.changeFont(NSFontManager.shared)
-      // x.font = tableView.font
-    }
-
-   }
- */
-  
-  
 }
 
 #endif
