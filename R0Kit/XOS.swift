@@ -147,6 +147,14 @@ import Foundation
   
   // public typealias IndexPath = NSIndexPath
   
+  extension NSMenuItem {
+    public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping () -> Void) -> NSMenuItem {
+      let nmi = NSMenuItem(title: withTitle, action: #selector(X.goFilter(_:)), keyEquivalent: keyEquivalent)
+      let x = Unmanaged.passRetained(X(fn))
+      nmi.target = x.takeUnretainedValue()
+      return nmi
+    }
+  }
   
   extension NSApplication {
     public func registerForRemoteNotifications() {
