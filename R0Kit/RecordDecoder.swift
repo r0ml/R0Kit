@@ -63,7 +63,7 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
     
     // if the field I'm being asked to decode is an array of DataModel -- then this is the parent, and those are the children.
     // so here, the parent will be childless
-    print(typ)
+    // print(typ)
     
     if let v = decoder.record[key.stringValue] {
       if typ is CKRecordValuable.Type {

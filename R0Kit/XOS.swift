@@ -25,7 +25,7 @@ import Foundation
   public typealias CollectionViewDelegate = UICollectionViewDelegate
   public typealias CollectionViewDataSource = UICollectionViewDataSource
   public typealias CollectionViewItem = UICollectionViewCell
-  public typealias CollectionViewDelegateFlowLayout = UICollectionViewFlowLayout
+  public typealias CollectionViewDelegateFlowLayout = UICollectionViewDelegateFlowLayout
   
   public typealias Application = UIApplication
   public typealias ApplicationDelegate = UIApplicationDelegate

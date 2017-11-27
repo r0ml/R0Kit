@@ -149,3 +149,18 @@ extension Notification {
 #endif
 
 
+
+#if os(macOS)
+  public class CollectionViewFlowLayout : NSCollectionViewFlowLayout {
+    public override func shouldInvalidateLayout(forBoundsChange newBounds: NSRect) -> Bool {
+      return true
+    }
+  }
+#elseif os(iOS)
+  public class CollectionViewFlowLayout : UICollectionViewFlowLayout {
+    public override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+      return true
+    }
+}
+#endif
+
