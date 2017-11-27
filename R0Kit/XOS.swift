@@ -162,7 +162,7 @@ import Foundation
     }
   }
   
-  public class Label : TextField {
+  open class Label : TextField {
     required override public init(frame: CGRect) {
       super.init(frame: frame)
       self.isEditable = false
@@ -172,13 +172,13 @@ import Foundation
       super.init(coder: coder)
     }
     
-    public override func calcSize() {
+    open override func calcSize() {
       super.calcSize()
     }
     
     // What I really want is for my superclass (e.g. VStack) to ignore my desired size, and force
     // the label to remain fixed-size
-    public override var intrinsicContentSize: NSSize {
+    open override var intrinsicContentSize: NSSize {
       get {
         let d = super.intrinsicContentSize
         return NSSize(width: min(d.width, 600), height: d.height)
