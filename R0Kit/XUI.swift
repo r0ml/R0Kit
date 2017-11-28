@@ -36,6 +36,13 @@ public class X : NSObject {
   }
 }
 
+extension NSGestureRecognizer {
+  public convenience init(_ fn : @escaping () -> Void) {
+    let x = Unmanaged.passRetained(X(fn))
+    self.init(target: x.takeUnretainedValue(), action: #selector(X.goFilter(_:)))
+  }
+}
+
 extension Data {
   public func md5() -> Data {
     var digest = Array<UInt8>(repeating:0, count:Int(CC_MD5_DIGEST_LENGTH))

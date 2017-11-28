@@ -88,7 +88,7 @@ public class DataCache<T : DataModel> : NSObject {
   }
   
   public func save() {
-    Notification.statusUpdate("\(singleton.count) \(T.name) downloaded")
+    Notification.statusUpdate("\(singleton.count) \(T.name) saved")
 
     let fnam = T.filename
     let g = fnam.deletingLastPathComponent()

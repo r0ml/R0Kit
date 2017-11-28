@@ -9,10 +9,10 @@
 
 // I could represet the entire zone by an object -- and have each record type in the zone.
 
-public extension RawRepresentable where Self : HTMLable {
-  public var recordValue : CKRecordValue { return self.rawValue as! CKRecordValue }
-  public static func from(recordValue: CKRecordValue) -> Self {
-    return Self.init(rawValue: recordValue as! Self.RawValue)!
+public extension RawRepresentable where Self : HTMLable, RawValue : CustomStringConvertible {
+  public var htmlValue : String { return String(describing: self.rawValue) }
+  public static func from(htmlValue: String) -> Self {
+    return Self.init(rawValue: htmlValue as! RawValue)!
   }
 }
 
@@ -96,6 +96,8 @@ public class HTMLEncoder : Encoder {
         encoder.html.append(m)
       } else if let v = valu as? CustomStringConvertible {
         encoder.html.append("<td>\(String(describing: v))</td>")
+      } else if let v = valu as?  HTMLable {
+        encoder.html.append("<td>\(v.htmlValue)</td>")
       } else {
         print("failed to html encode \(valu) for \(key.stringValue)")
       }
