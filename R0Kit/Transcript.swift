@@ -1,10 +1,5 @@
-//
-//  Transcript.swift
-//  WPKit
-//
-//  Created by Robert M. Lefkowitz on 11/9/17.
-//
 
+// FIXME switch to using CollectionView from TableView
 #if os(macOS)
 class MyTableView : TableView {
 }

@@ -1,9 +1,3 @@
-//
-//  Cloud.swift
-//  WPKit
-//
-//  Created by Robert M. Lefkowitz on 11/4/17.
-//
 
 import CloudKit
 

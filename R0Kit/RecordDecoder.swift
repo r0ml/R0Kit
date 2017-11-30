@@ -71,13 +71,6 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
       } else if let z = v as? T {
         return z
       }
-    } else {
-      if typ is Clem.Type { // the subrecord is not available in the record
-        // we could a) go get the subrecords
-        // b) ignore the subrecords
-        // c) look for the subrecords somewhere else in the decoder
-        return (typ as! Clem.Type).init() as! T
-      }
     }
     throw DataModelError("nil value for \(key)")
   }

@@ -1,36 +1,6 @@
 
 import CloudKit
 
-public protocol Clem {
-  init()
-  func subrecords(_ zid : CKRecordZoneID) -> [PCRecord]
-}
-
-public class SubRecords<T> : Codable, Clem where T : DataModel {
-  public var details : Array<T>
-  
-  public init( _ d : Array<T> ) {
-    self.details = d
-  }
-  
-  required public init() {
-    self.details = []
-  }
-  
-  public func subrecords(_ zid : CKRecordZoneID) -> [PCRecord] {
-    return self.details.flatMap { kr in
-      let re = RecordEncoder(kr, zid)
-      do {
-        try kr.encode(to: re )
-        return re.record
-      } catch {
-        print("what do I do now? \(error)")
-        return nil
-      }
-    }
-  }
-}
-
 public class DataCache<T : DataModel> : NSObject {
   var _singleton : [String : T] = [:]
   var rootID: CKRecordID?
@@ -107,12 +77,7 @@ public class DataCache<T : DataModel> : NSObject {
   public func fromICloud() {
     let query = CKQuery(recordType: T.name, predicate: NSPredicate(value: true))
     repeatCursor(db : dbx, zoneID: zonid, query: query,
-                 recordHandler: { do {
-                  try self.cache(T.init(record: $0))
-                 } catch {
-                  print("caching DataModel from ICloud", error)
-                  }
-    },
+                 recordHandler: { self.cache(T.init(record: $0)) },
                  blockHandler: {}, completionHandler: { self.pbCopy(); self.save() } )
   }
   
@@ -120,8 +85,11 @@ public class DataCache<T : DataModel> : NSObject {
     let j = Array(_singleton.values)
     NSPasteboard.general.clearContents()
     let ke : [String] = j.map { let he = HTMLEncoder(); try? $0.encode(to: he); return he.html  }
-    let kj = ke.reduce("") { $0.appending("<table><tr>\($1)</tr></table>") }
-    NSPasteboard.general.setString( kj, forType: .html )
+    var kj = ke.reduce("<html><head><meta http-equiv=Content-Type content=\"text/html; charset=utf-8\"></head><body><table>") {
+      $0.appending("<tr>\($1)</tr>") }
+    kj.append("</table></body></html>")
+   // NSPasteboard.general.setData(kj.data(using: .utf8), forType: .html)
+   NSPasteboard.general.setString( kj, forType: .html )
   }
 
   public func restoreFromFile() {
@@ -155,17 +123,20 @@ public class DataCache<T : DataModel> : NSObject {
     // when I cache locally, to I save the "records-that-were-already-there metadata?
     
     
-    let tu : [CKRecord] = candidates.values.flatMap { (_ m : DataModel) -> [CKRecord] in
+    var tu : [CKRecord] = candidates.values.flatMap { (_ m : DataModel) -> CKRecord? in
       let r = RecordEncoder(m, self.zonid)
       do {
         try m.encode(to: r )
-        return r.record.allRecords
+        // I can set the parent to something else?
+        if (r.record.parent == nil) {  r.record.setParent(self.rootID) }
+        return r.record // r.record.allRecords
       } catch {
         print(error)
-        return []
+        return nil
       }
     }
     
+    // FIXME:  If the local records don't have metadata, then they are presumably inserts
     /*
     let fo = CKFetchRecordsOperation(recordIDs: cmp)
     fo.qualityOfService = .userInitiated
@@ -212,10 +183,26 @@ public class DataCache<T : DataModel> : NSObject {
       // modifies here
       pendingUpdates.removeAll()
       */
-      
-      
-      let mro = CKModifyRecordsOperation(recordsToSave: tu, recordIDsToDelete: nil)
-      if #available(iOS 11.0, *) {
+    modifyRecords(tu)
+    
+  }
+  
+  func modifyRecords(_ tux : [CKRecord] ) {
+    let z = ceil( Double(tux.count) / 300.0)
+    let m = ceil (Double(tux.count) / Double(z))
+    let mx = min(tux.count, Int(m))
+    var tu = tux
+    let mm = Array(tux[0..<mx])
+    
+    /*while(tu.count > 0) {
+      let mx = min(tu.count, Int(m))
+      let tux = Array(tu[0..<mx])
+      // tu.removeFirst(mx)
+      // modifyRecords(tux)
+    }*/
+
+    let mro = CKModifyRecordsOperation(recordsToSave: mm, recordIDsToDelete: nil)
+    if #available(iOS 11.0, *) {
         let oc = CKOperationConfiguration()
         oc.timeoutIntervalForRequest = 10
         mro.configuration = oc
@@ -226,14 +213,32 @@ public class DataCache<T : DataModel> : NSObject {
         }
         os_log("modify %@ wrote %d records", type: .info, T.name, recs?.count ?? 0)
         
-        // inserts here
-        let tox = candidates.values.map { $0 }
-        let pendingInserts : [CKRecord] = tox.flatMap { v -> [CKRecord] in
-          let a = v.toRecord(self.zonid);
-          a.p.setParent(self.rootID);
-          return a.allRecords }
+        var n = 0
+        if let xrecs = recs, xrecs.count > 0 {
+          xrecs.forEach { wrot in
+            if let x = tu.index(where: { wrot.recordID.recordName == $0.recordID.recordName }) {
+              tu.remove(at: x)
+              n += 1
+            }
+          }
+        }
         
-        let mro2 = CKModifyRecordsOperation(recordsToSave: pendingInserts, recordIDsToDelete: nil)
+        Notification.statusUpdate("\(n) records updated")
+        // inserts here
+        /*let tox = candidates.values.map { $0 }
+        let pendingInserts : [CKRecord] = tox.map { v -> CKRecord in
+          let a = v.toRecord(self.zonid);
+          a.setParent(self.rootID);
+          return a }*/
+        
+        if n > 0  { if tu.count > 0  { self.modifyRecords(tu) }
+        else { Notification.statusUpdate("wrote all records") }
+        } else {
+          Notification.errorReport("writing records", "failed")
+        }
+        
+        /*
+        let mro2 = CKModifyRecordsOperation(recordsToSave: tu, recordIDsToDelete: nil)
         mro2.savePolicy = CKRecordSavePolicy.allKeys
         mro2.modifyRecordsCompletionBlock = { recs, rids, error in
           if let err = error {
@@ -242,10 +247,10 @@ public class DataCache<T : DataModel> : NSObject {
           os_log("insert %@ wrote %d records", type: .info, T.name, recs?.count ?? 0)
           
           // FIXME: Now I want to trigger "fetchChanges"
-          
+          }
         }
         self.dbx.add(mro2)
-        
+        */
       }
       self.dbx.add(mro)
     }
@@ -332,8 +337,16 @@ extension DataModel {
     return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(name)
     } }
   
-  public func toRecord(_ zid : CKRecordZoneID) -> PCRecord {
+  public func toRecord(_ zid : CKRecordZoneID) -> CKRecord { // PCRecord {
     //  var r = CKRecord(recordType: name, recordID: CKRecordID(recordName: getKey(), zoneID: zid))
+    if let es = encodedSystemFields {
+      let coder = NSKeyedUnarchiver(forReadingWith: es)
+      coder.requiresSecureCoding = true
+      if let re = CKRecord(coder: coder) {
+        coder.finishDecoding()
+        return re
+      }
+    }
     let re = RecordEncoder(type(of: self).name, getKey(), zid)
     do {
       try self.encode(to: re)

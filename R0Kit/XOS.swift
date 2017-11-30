@@ -176,6 +176,20 @@ import Foundation
       super.calcSize()
     }
     
+    public var numberOfLines : Int {
+      get { return maximumNumberOfLines }
+      set { maximumNumberOfLines = newValue }
+    }
+    
+    public var attributedText : NSAttributedString {
+      get { return attributedStringValue }
+      set { attributedStringValue = newValue }
+    }
+    
+    public var textAlignment : NSTextAlignment {
+      get { return alignment }
+      set { alignment = newValue }
+    }
     // What I really want is for my superclass (e.g. VStack) to ignore my desired size, and force
     // the label to remain fixed-size
     open override var intrinsicContentSize: NSSize {

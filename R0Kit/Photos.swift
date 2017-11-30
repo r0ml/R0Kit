@@ -1,11 +1,3 @@
-//
-//  Photos.swift
-//  WPKit
-//
-//  Created by Robert M. Lefkowitz on 10/24/17.
-//
-
-import Foundation
 
 #if os(macOS)
   // in iOS I would use Photos, but in macos apparently it is Media Library
