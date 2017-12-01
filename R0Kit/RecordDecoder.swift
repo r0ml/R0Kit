@@ -40,7 +40,6 @@ public class DataModelError : Error {
   var localizedDescription : String { get {
     return msg
     }
-    
   }
 }
 
@@ -70,6 +69,20 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
         return (typ as! CKRecordValuable.Type).from(recordValue: v) as! T
       } else if let z = v as? T {
         return z
+      } else if typ == LocalAsset.self, let z = v as? CKAsset {
+        // let filename = ProcessInfo.processInfo.globallyUniqueString
+        // FIXME:  I might also need ownerName from zone
+        let tempdir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(decoder.record.recordID.zoneID.zoneName).appendingPathComponent(decoder.record.recordType).appendingPathComponent(key.stringValue)
+        // FIXME: create a directory for this zone?
+        do {
+          try FileManager.default.createDirectory(atPath: tempdir.path, withIntermediateDirectories: true, attributes: nil)
+          let tempurl = tempdir.appendingPathComponent(decoder.record.recordID.recordName)
+          let d = try Data(contentsOf: z.fileURL)
+          try d.write(to: tempurl, options: .atomicWrite)
+          return LocalAsset(tempurl) as! T
+        } catch {
+          print("trying to save asset: ", error.localizedDescription)
+        }
       }
     }
     throw DataModelError("nil value for \(key)")

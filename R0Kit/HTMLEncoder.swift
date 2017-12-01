@@ -98,6 +98,8 @@ public class HTMLEncoder : Encoder {
         encoder.html.append("<td>\(String(describing: v))</td>")
       } else if let v = valu as?  HTMLable {
         encoder.html.append("<td>\(v.htmlValue)</td>")
+      } else if let v = valu as? LocalAsset {
+        encoder.html.append("<td>\(v.url.absoluteString)</td>")
       } else {
         print("failed to html encode \(valu) for \(key.stringValue)")
       }

@@ -3,8 +3,8 @@
 var downloadingQ : DispatchQueue = DispatchQueue(label: "downloading", qos: .background,  attributes: .concurrent)
 
 public func getImage(sync: Bool = false, _ url : String, f : Optional<(Error?, Data) -> Void> = nil) {
+  let lsem = DispatchSemaphore(value: 0)
   if let u = URL(string: url) {
-    let lsem = DispatchSemaphore(value: 0)
     downloadingQ.async {
       let r = URLRequest(url: u, timeoutInterval: 30.0)
       
@@ -23,7 +23,10 @@ public func getImage(sync: Bool = false, _ url : String, f : Optional<(Error?, D
       }
       task.resume()
     }
-    if sync { lsem.wait() }
+  } else {
+    if let f = f { f( nil, Data() ) }
+    lsem.signal()
   }
+  if sync { lsem.wait() }
 }
 

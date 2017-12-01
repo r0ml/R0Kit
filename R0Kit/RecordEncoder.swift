@@ -130,6 +130,8 @@ public class RecordEncoder : Encoder {
         encoder.record[key.stringValue] = v.recordValue
       } else if let v = valu as? CKRecordValue {
         encoder.record[key.stringValue] = v
+      } else if let v = valu as? LocalAsset {
+        encoder.record[key.stringValue] = CKAsset(fileURL: v.url)
       } else {
         print("failed to encode \(valu) for \(key.stringValue)")
       }

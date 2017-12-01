@@ -53,7 +53,7 @@ public class DataCache<T : DataModel> : NSObject {
       NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: [:]) )
       
       // TODO: This can be optimized by scheduling a future save, and not bothering if one is already scheduled
-      save()
+      // FIXME:  how to indicate that the datamodel is "dirty" and needs to be saved
     }
   }
   
@@ -382,3 +382,21 @@ public func dumpData(db : CKDatabase, zoneID: CKRecordZoneID, table : String) {
  blockHandler: { print("block ended")},
  completionHandler: { print("all done") })
  }
+
+public class LocalAsset : Codable {
+  public var url : URL // local file URL
+  
+  public init(_ u : URL) {
+    url = u
+  }
+  
+  public var data : Data? { get
+  { return try? Data(contentsOf: url)
+    }
+  }
+  
+  public var image : Image? { get
+  { return data?.image
+  }
+  }
+}

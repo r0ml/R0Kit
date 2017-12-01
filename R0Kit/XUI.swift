@@ -7,7 +7,7 @@ import CommonCrypto
     var fng : ((UIGestureRecognizer) -> Void)? = nil
     public init(_ fn : @escaping ()->Void) { self.fn = fn }
     public init(gesture fn : @escaping (UIGestureRecognizer) -> Void) { self.fng = fn }
-    @objc public func goFilter(_ x : AnyObject?) {
+    @objc public func method(_ x : AnyObject?) {
       fn?()
     }
     @objc public func goGesture(_ x : AnyObject?) {
@@ -28,18 +28,22 @@ extension Decodable {
   }
 }
 
-public class X : NSObject {
+public class ClosX : NSObject {
+  // I need to hang on to the objs to keep them for the ObjC machinery.
+  // Swift can't tell that they must not be garbage collected
+  static var objs = [ClosX]()
   let fn : (()->Void)
-  public init(_ fn : @escaping ()->Void) { self.fn = fn }
-  @objc public func goFilter(_ x : AnyObject?) {
+  public var selector : Selector { return #selector(ClosX.method(_:)) }
+  public init(_ fn : @escaping ()->Void) { self.fn = fn; super.init(); ClosX.objs.append(self) }
+  @objc public func method(_ x : AnyObject?) {
     fn()
   }
 }
 
 extension NSGestureRecognizer {
   public convenience init(_ fn : @escaping () -> Void) {
-    let x = Unmanaged.passRetained(X(fn))
-    self.init(target: x.takeUnretainedValue(), action: #selector(X.goFilter(_:)))
+    let x = ClosX(fn)
+    self.init(target: x, action: x.selector)
   }
 }
 

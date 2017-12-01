@@ -138,8 +138,8 @@ import Foundation
  */
   extension UIControl {
     public func addTarget( for forevent: UIControlEvents, _ fn: @escaping ()->Void ) -> Void {
-      let x = Unmanaged.passRetained(X(fn))
-      addTarget(x.takeUnretainedValue(), action: #selector(X.goFilter(_:)), for: forevent)
+      let x = ClosX(fn)
+      addTarget(x, action: x.selector, for: forevent)
     }
   }
   
@@ -149,9 +149,9 @@ import Foundation
   
   extension NSMenuItem {
     public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping () -> Void) -> NSMenuItem {
-      let nmi = NSMenuItem(title: withTitle, action: #selector(X.goFilter(_:)), keyEquivalent: keyEquivalent)
-      let x = Unmanaged.passRetained(X(fn))
-      nmi.target = x.takeUnretainedValue()
+      let x = ClosX(fn)
+      let nmi = NSMenuItem(title: withTitle, action: x.selector, keyEquivalent: keyEquivalent)
+      nmi.target = x
       return nmi
     }
   }
