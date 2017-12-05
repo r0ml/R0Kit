@@ -40,7 +40,7 @@ public class ClosX : NSObject {
   }
 }
 
-extension NSGestureRecognizer {
+extension GestureRecognizer {
   public convenience init(_ fn : @escaping () -> Void) {
     let x = ClosX(fn)
     self.init(target: x, action: x.selector)
@@ -61,6 +61,12 @@ extension Color {
   public convenience init(hex: UInt32) {
     let f = { (x:UInt32,y:Int) in CGFloat( (x >> y) & 0xff) / 255.0 }
     self.init(red: f(hex, 16) , green: f(hex, 8), blue: f(hex, 0), alpha: 1)
+  }
+}
+
+extension CGPoint {
+  public static func +(a:CGPoint, b:CGPoint) -> CGPoint {
+    return CGPoint(x: a.x+b.x, y: a.y+b.y)
   }
 }
 
@@ -175,3 +181,55 @@ extension Notification {
 }
 #endif
 
+#if os(macOS)
+  extension NSBezierPath {
+    public func addArc(withCenter: CGPoint, radius: CGFloat, startAngle: CGFloat, endAngle: CGFloat, clockwise: Bool = false) {
+      let sa = clockwise ? endAngle : startAngle
+      let ea = clockwise ? startAngle : endAngle
+      self.appendArc(withCenter: withCenter, radius : radius, startAngle: sa, endAngle: ea)
+    }
+    
+    public func addLine(to: CGPoint) {
+      self.line(to: to)
+    }
+}
+  
+  extension NSBezierPath.LineCapStyle {
+    static let round = roundLineCapStyle
+  }
+  
+  extension NSBezierPath.LineJoinStyle {
+    static let bevel = bevelLineJoinStyle
+  }
+  
+  public func UIGraphicsGetCurrentContext() -> CGContext? {
+    return NSGraphicsContext.current?.cgContext
+  }
+  
+  public func makeImage(_ sz : CGSize, _ fn : @escaping (CGSize)->Void) -> Image? {
+    if let bitmapRep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(sz.width), pixelsHigh: Int(sz.height), bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: NSColorSpaceName.calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0) {
+      if let gc = NSGraphicsContext.init(bitmapImageRep: bitmapRep) {
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = gc
+        fn(sz)
+        NSGraphicsContext.restoreGraphicsState()
+        
+        let im = Image(size: sz)
+        im.addRepresentation(bitmapRep)
+        return im
+      }
+    }
+    return nil
+  }
+  
+#endif
+
+#if os(iOS)
+  public func makeImage(_ sz: CGSize, _ fn: @escaping (CGSize) -> Void) -> Image? {
+    UIGraphicsBeginImageContextWithOptions(sz, false, 1.0)
+    fn(sz)
+    let newImage = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    return newImage
+  }
+#endif

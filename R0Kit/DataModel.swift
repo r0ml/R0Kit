@@ -82,14 +82,17 @@ public class DataCache<T : DataModel> : NSObject {
   }
   
   public func pbCopy() {
+    #if os(macOS)
     let j = Array(_singleton.values)
     NSPasteboard.general.clearContents()
+    
     let ke : [String] = j.map { let he = HTMLEncoder(); try? $0.encode(to: he); return he.html  }
     var kj = ke.reduce("<html><head><meta http-equiv=Content-Type content=\"text/html; charset=utf-8\"></head><body><table>") {
       $0.appending("<tr>\($1)</tr>") }
     kj.append("</table></body></html>")
    // NSPasteboard.general.setData(kj.data(using: .utf8), forType: .html)
    NSPasteboard.general.setString( kj, forType: .html )
+    #endif
   }
 
   public func restoreFromFile() {

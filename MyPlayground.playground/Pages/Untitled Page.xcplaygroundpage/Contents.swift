@@ -1,6 +1,7 @@
 //: Playground - noun: a place where people can play
 
-import R0Kit
+import AppKit
+
 
 var str = "Hello, playground"
 
@@ -8,5 +9,4 @@ var str = "Hello, playground"
 
 var b = "clem"
 
-
-
+NSCollectionView.SupplementaryElementKind.sectionHeader.rawValue

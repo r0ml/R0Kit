@@ -16,15 +16,25 @@ import Foundation
   public typealias View = UIView
   public typealias BezierPath = UIBezierPath
   public typealias Font = UIFont
+  
+  public typealias EdgeInsets = UIEdgeInsets
+  public typealias ScrollView = UIScrollView
+  
   public typealias TextField = UITextField
+  public typealias TextView = UITextView
+  public typealias TextViewDelegate = UITextViewDelegate
+  
   public typealias TableView = UITableView
   public typealias TableViewDelegate = UITableViewDelegate
   public typealias TableViewDataSource = UITableViewDataSource
 
+  public typealias GestureRecognizer = UIGestureRecognizer
+  
   public typealias CollectionView = UICollectionView
   public typealias CollectionViewDelegate = UICollectionViewDelegate
   public typealias CollectionViewDataSource = UICollectionViewDataSource
   public typealias CollectionViewItem = UICollectionViewCell
+  public typealias CollectionViewLayout = UICollectionViewLayout
   public typealias CollectionViewDelegateFlowLayout = UICollectionViewDelegateFlowLayout
   
   public typealias Application = UIApplication
@@ -32,6 +42,8 @@ import Foundation
   
   public typealias UserNotificationCenter = UNUserNotificationCenter
   public typealias UserNotificationCenterDelegate = UNUserNotificationCenterDelegate
+  
+  public typealias ClickGestureRecognizer = UITapGestureRecognizer
   
 #elseif os(macOS)
   @_exported import AppKit
@@ -43,15 +55,25 @@ import Foundation
   public typealias View = NSView
   public typealias BezierPath = NSBezierPath
   public typealias Font = NSFont
+  
+  public typealias EdgeInsets = NSEdgeInsets
+  public typealias ScrollView = NSScrollView
+  
   public typealias TextField = NSTextField
+  public typealias TextView = NSTextView
+  public typealias TextViewDelegate = NSTextViewDelegate
+  
   public typealias TableView = NSTableView
   public typealias TableViewDelegate = NSTableViewDelegate
   public typealias TableViewDataSource = NSTableViewDataSource
+  
+  public typealias GestureRecognizer = NSGestureRecognizer
   
   public typealias CollectionView = NSCollectionView
   public typealias CollectionViewDelegate = NSCollectionViewDelegate
   public typealias CollectionViewDataSource = NSCollectionViewDataSource
   public typealias CollectionViewItem = NSCollectionViewItem
+  public typealias CollectionViewLayout = NSCollectionViewLayout
   public typealias CollectionViewDelegateFlowLayout = NSCollectionViewDelegateFlowLayout
   
   public typealias Application = NSApplication
@@ -59,6 +81,8 @@ import Foundation
   
   public typealias UserNotificationCenter = NSUserNotificationCenter
   public typealias UserNotificationCenterDelegate = NSUserNotificationCenterDelegate
+  
+  public typealias ClickGestureRecognizer = NSClickGestureRecognizer 
 
 #endif
 
@@ -87,6 +111,13 @@ import Foundation
   //    get
   //  }
   }
+  
+  public extension ImageView {
+    public func scaleMe() {
+      self.contentMode = .scaleAspectFit
+    }
+  }
+
 
   public extension UIImage {
     public var pngData: Data? {
@@ -142,6 +173,35 @@ import Foundation
       addTarget(x, action: x.selector, for: forevent)
     }
   }
+  
+  open class ViewController : UIViewController {
+      public required init() {
+        super.init(nibName: nil, bundle: nil)
+      }
+    
+    required public init?(coder aDecoder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+    
+  }
+  
+  open class CollectionViewCell : CollectionViewItem {
+    required public init() {
+      super.init(frame: CGRect.zero)
+    }
+    
+    required public init?(coder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+    
+  }
+  
+  extension CollectionView {
+    public func invalidateLayout() {
+      self.collectionViewLayout.invalidateLayout()
+    }
+  }
+
   
 #elseif os(macOS)
   
@@ -208,9 +268,23 @@ import Foundation
 
   public class Button : NSButton {
     public var draggable : Draggable.Type?
+    
+    public func setAttributedTitle(_ str : NSAttributedString) {
+      self.attributedTitle = str
+    }
+  }
+  
+  public extension ImageView {
+    public func scaleMe() {
+      self.imageScaling = .scaleProportionallyUpOrDown
+    }
   }
   
   public extension NSImage {
+    convenience init?(named: String) {
+      self.init(named: NSImage.Name(rawValue: named))
+    }
+    
     public var pngData: Data? {
       guard let tiffRepresentation = tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) else { return nil }
       return bitmapImage.representation(using: .png, properties: [:])
@@ -275,7 +349,21 @@ import Foundation
   }
   
   extension View {
-    var xlayer : CALayer { return self.layer! }
+    public var xlayer : CALayer { return self.layer! }
+    
+    public var backgroundColor : NSColor? {
+      get { if let cg = self.layer?.backgroundColor { return NSColor(cgColor: cg) } else { return nil } }
+      set { self.wantsLayer = true;  self.layer?.backgroundColor = newValue?.cgColor }
+    }
+    
+    public var isOpaque : Bool {
+      get { return self.layer?.isOpaque == true }
+      set { self.wantsLayer = true; self.layer?.isOpaque = newValue }
+    }
+    
+    public func setNeedsLayout() {
+      self.needsLayout = true
+    }
   }
   
   extension TextField {
@@ -285,6 +373,17 @@ import Foundation
       }
       set {
         self.stringValue = newValue ?? ""
+      }
+    }
+  }
+  
+  extension TextView {
+    public var text : String {
+      get {
+        return self.string
+      }
+      set {
+        self.string = newValue
       }
     }
   }
@@ -314,12 +413,68 @@ import Foundation
 
   }
   
+  extension CollectionView {
+    public func register(_ cl : AnyClass, forCellWithReuseIdentifier idx: String) {
+      register(cl, forItemWithIdentifier: NSUserInterfaceItemIdentifier(rawValue: idx))
+    }
+    
+    public func register(_ cl : AnyClass, forSupplementaryViewOfKind: String, withReuseIdentifier idx: String) {
+      register(cl, forSupplementaryViewOfKind: CollectionView.SupplementaryElementKind(rawValue: forSupplementaryViewOfKind), withIdentifier: NSUserInterfaceItemIdentifier(rawValue: idx))
+    }
+
+    public func invalidateLayout() {
+      self.collectionViewLayout?.invalidateLayout()
+    }
+  }
+  
   extension Font {
     public static func italicSystemFont(ofSize : CGFloat) -> Font {
       return Font.systemFont(ofSize: ofSize)
     }
   }
   
+  open class ViewController : NSViewController {
+    open func viewWillLayoutSubviews() {
+      self.viewWillLayout()
+    }
+    
+    public required init() {
+      super.init(nibName: nil, bundle: nil)
+    }
+    
+    required public init?(coder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+  }
+  
+  open class CollectionViewCell : CollectionViewItem {
+    required public init() {
+      super.init(nibName: nil, bundle: nil)
+    }
+    
+    #if os(macOS)
+    override convenience public init(nibName: NSNib.Name?, bundle: Bundle?) {
+      self.init()
+    }
+    #endif
+    
+    required public init?(coder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+    
+  }
+  
+  extension ScrollView {
+    public var showsVerticalScrollIndicator : Bool {
+      get { return hasVerticalScroller }
+      set { hasVerticalScroller = newValue }
+    }
+    public var showsHorizontalScrollIndicator : Bool {
+      get { return hasHorizontalScroller }
+      set { hasHorizontalScroller = newValue }
+    }
+
+  }
 #endif
 
 

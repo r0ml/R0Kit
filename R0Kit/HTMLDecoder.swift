@@ -4,6 +4,7 @@
 
 // FIXME:  This hasn't been implemented yet
 
+#if os(macOS)
 public class HTMLDecoder : Decoder {
   let htmlDoc : XMLDocument
   
@@ -106,3 +107,5 @@ fileprivate struct HTMLUnkeyedDecodingContainer : UnkeyedDecodingContainer, Sing
     return decoder
   }
 }
+#endif
+

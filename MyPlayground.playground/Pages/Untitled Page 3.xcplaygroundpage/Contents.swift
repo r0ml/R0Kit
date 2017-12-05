@@ -7,9 +7,20 @@ var str = "Hello, playground"
 
 //: [Next](@next)
 
-DownView(frame: CGRect(x:0, y:0, width:540, height: 540))
+/*IconView(.downArrow, frame: CGRect(x:0, y:0, width:540, height: 540))
 
-CloudView(frame: CGRect(x:0, y:0, width: 1580, height: 1580))
+IconView(.upArrow, frame: CGRect(x:0, y:0, width:540, height: 540))
+
+
+IconView(.cloud, frame: CGRect(x:0, y:0, width: 580, height: 580))
+
+IconView(.downloadCloud, frame: CGRect(x:0, y:0, width: 600, height: 600))
+
+IconView(.uploadCloud, frame: CGRect(x:0, y:0, width: 600, height: 600))
+*/
 
 sqrt(5)
- 
+
+let fr = CGRect(origin: CGPoint.zero, size: CGSize(width: 40, height: 40))
+let imv : IconView = IconView.init(IconType.downArrow, frame : fr ) { _ in } 
+makeImage(CGSize(width: 40, height: 40)) { (imv.drawArrow(CGRect(origin: CGPoint.zero, size: $0), false)) }
