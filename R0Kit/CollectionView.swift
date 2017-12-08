@@ -74,7 +74,7 @@
       self.collectionViewLayout?.invalidateLayout()
     }
     
-    public convenience init(frame: CGRect = CGRect.zero, collectionViewLayout: CollectionViewLayout = CollectionViewFlowLayout() ) {
+    public convenience init(frame: CGRect, collectionViewLayout: CollectionViewLayout) {
       self.init(frame: frame)
       self.collectionViewLayout = collectionViewLayout
     }
@@ -103,6 +103,15 @@
     }
   }
 #endif
+
+extension CollectionView {
+  // The only reason for this unused init argument is to disambiguate it from the (non-overridable) init defined in CollectionView
+  // CollectionView is a typealias -- which is what makes it non-overridable
+  // if it were a proper subclass, I could do this right
+  public convenience init(empty: Bool) {
+    self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
+  }
+}
 
 public protocol IdentifiableClass {
   static var identifier : String {get}
