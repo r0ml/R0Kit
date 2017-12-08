@@ -75,14 +75,8 @@ import Foundation
 // ------------------------------------------------------------------------------
 #if os(iOS)
   extension TextView {
-    open var myLayer: CALayer {
-      get { return super.layer }
-      set { super.layer = newValue }
-    }
-    
     open var myTextContainer: NSTextContainer {
       get { return self.textContainer }
-      set { self.textContainer = newValue }
     }
   }
   
@@ -155,6 +149,11 @@ import Foundation
   
   extension View {
     var xlayer : CALayer { return self.layer }
+    
+    open var myLayer: CALayer {
+      get { return self.layer }
+    }
+
   }
   
   /*
@@ -192,6 +191,9 @@ import Foundation
   
   // public typealias IndexPath = NSIndexPath
   
+  open class UICollectionReusableView : View {
+  }
+  
   extension NSMenuItem {
     public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping () -> Void) -> NSMenuItem {
       let x = ClosX(fn)
@@ -226,11 +228,6 @@ import Foundation
       set { maximumNumberOfLines = newValue }
     }
     
-    public var attributedText : NSAttributedString {
-      get { return attributedStringValue }
-      set { attributedStringValue = newValue }
-    }
-    
     public var textAlignment : NSTextAlignment {
       get { return alignment }
       set { alignment = newValue }
@@ -262,6 +259,11 @@ import Foundation
   public extension ImageView {
     public func scaleMe() {
       self.imageScaling = .scaleProportionallyUpOrDown
+    }
+    
+    public var alpha : CGFloat {
+      get { return self.alphaValue }
+      set { self.alphaValue = newValue }
     }
   }
   
@@ -336,6 +338,11 @@ import Foundation
   extension View {
     public var xlayer : CALayer { return self.layer! }
     
+    open var myLayer: CALayer {
+      get { self.wantsLayer = true; return self.layer! }
+      set { self.layer = newValue }
+    }
+
     public var backgroundColor : NSColor? {
       get { if let cg = self.layer?.backgroundColor { return NSColor(cgColor: cg) } else { return nil } }
       set { self.wantsLayer = true;  self.layer?.backgroundColor = newValue?.cgColor }
@@ -349,6 +356,7 @@ import Foundation
     public func setNeedsLayout() {
       self.needsLayout = true
     }
+
   }
   
   extension TextField {
@@ -358,6 +366,15 @@ import Foundation
       }
       set {
         self.stringValue = newValue ?? ""
+      }
+    }
+    
+    public var attributedText : NSAttributedString? {
+      get {
+        return self.attributedStringValue
+      }
+      set {
+        self.attributedStringValue = newValue ?? NSAttributedString()
       }
     }
   }
@@ -370,11 +387,6 @@ import Foundation
       set {
         self.string = newValue
       }
-    }
-    
-    open var myLayer: CALayer {
-      get { return self.layer! }
-      set { self.layer = newValue }
     }
 
     open var myTextContainer: NSTextContainer {
@@ -445,6 +457,10 @@ import Foundation
       set { hasHorizontalScroller = newValue }
     }
 
+    
+    public var contentInset : NSEdgeInsets {
+     get { return self.contentInsets }
+     }
   }
 #endif
 

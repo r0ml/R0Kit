@@ -40,6 +40,12 @@
     public func invalidateLayout() {
       self.collectionViewLayout.invalidateLayout()
     }
+    public convenience init(empty: Bool) {
+      self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout() )
+    }
+    public func register<T : IdentifiableClass>(_ cl : T.Type) {
+      register(cl as! AnyClass, forCellWithReuseIdentifier: cl.identifier)
+    }
   }
   
   public class CollectionViewFlowLayout : UICollectionViewFlowLayout {
@@ -48,16 +54,13 @@
     }
   }
   
-  extension CollectionView {
-    convenience init() {
-      self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout() )
-    }
-  }
-  
-  
 #elseif os(macOS)
-  
+
   extension CollectionView {
+     public convenience init(empty: Bool) {
+        self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
+      }
+
     public func register<T : IdentifiableClass>(_ cl : T.Type) {
       register(cl as! AnyClass, forCellWithReuseIdentifier: cl.identifier)
     }
@@ -104,15 +107,6 @@
   }
 #endif
 
-extension CollectionView {
-  // The only reason for this unused init argument is to disambiguate it from the (non-overridable) init defined in CollectionView
-  // CollectionView is a typealias -- which is what makes it non-overridable
-  // if it were a proper subclass, I could do this right
-  public convenience init(empty: Bool) {
-    self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
-  }
-}
-
 public protocol IdentifiableClass {
   static var identifier : String {get}
   init()
@@ -145,16 +139,29 @@ public protocol IdentifiableClass {
  // public func collectionView(_ collectionView: CollectionView, cellForItemAt indexPath: IndexPath) -> CollectionViewItem {
  //   }
     
-    public func makeCell<T : IdentifiableClass>(_ fn: @escaping (T) -> Void) -> T {
+    public func makeCell<T : IdentifiableClass>(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> T {
     if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? T {
       fn(cell)
       return cell
     }
     print("cant get here")
-    return UICollectionViewCell()
+    return T()
   }
   }
 #endif
 
+open class CollectionViewController : ViewController, CollectionViewDataSource {
+  open func collectionView(_ collectionView: NSCollectionView, numberOfItemsInSection section: Int) -> Int {
+    return 0
+  }
+  
+  public func collectionView(_ collectionView : CollectionView,
+                           itemForRepresentedObjectAt indexPath: IndexPath) -> CollectionViewItem {
+    return self.collectionView(cellForItemAt: indexPath, in: collectionView)
+    }
+  
+  open func collectionView( cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> CollectionViewItem {
+    return CollectionViewItem()
+  }
 
-
+}
