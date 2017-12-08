@@ -22,6 +22,7 @@
 		E79E52B31FBFA1E600FCAD98 /* XUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79E52AC1FBFA1E500FCAD98 /* XUI.swift */; };
 		E79E52B61FBFA21300FCAD98 /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79E52B41FBFA21200FCAD98 /* DataModel.swift */; };
 		E79E52B71FBFA21300FCAD98 /* Transcript.swift in Sources */ = {isa = PBXBuildFile; fileRef = E79E52B51FBFA21300FCAD98 /* Transcript.swift */; };
+		E7CD96EB1FD9E01C0098D603 /* CollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CD96EA1FD9E01C0098D603 /* CollectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,7 @@
 		E79E52B91FBFA23F00FCAD98 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		E79E52BA1FBFA24000FCAD98 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		E79E52C31FBFC04300FCAD98 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = MyPlayground.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		E7CD96EA1FD9E01C0098D603 /* CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +117,7 @@
 				E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */,
 				E73873FC1FC9F9C6009C3C28 /* HTMLDecoder.swift */,
 				E79E52AA1FBFA1E500FCAD98 /* TagListView.swift */,
+				E7CD96EA1FD9E01C0098D603 /* CollectionView.swift */,
 				E79E52AC1FBFA1E500FCAD98 /* XUI.swift */,
 				E79E52A81FBFA1E400FCAD98 /* XOS.swift */,
 				E79E52A91FBFA1E400FCAD98 /* Xnet.swift */,
@@ -275,6 +278,7 @@
 			files = (
 				E7492C1C1FD0AD3C001E60AF /* Icons.swift in Sources */,
 				E79E52B11FBFA1E600FCAD98 /* TagListView.swift in Sources */,
+				E7CD96EB1FD9E01C0098D603 /* CollectionView.swift in Sources */,
 				E73873FB1FC9F9B8009C3C28 /* HTMLEncoder.swift in Sources */,
 				E79E52B21FBFA1E600FCAD98 /* Cloud.swift in Sources */,
 				E79E52B01FBFA1E600FCAD98 /* Xnet.swift in Sources */,

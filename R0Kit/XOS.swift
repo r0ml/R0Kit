@@ -30,13 +30,6 @@ import Foundation
 
   public typealias GestureRecognizer = UIGestureRecognizer
   
-  public typealias CollectionView = UICollectionView
-  public typealias CollectionViewDelegate = UICollectionViewDelegate
-  public typealias CollectionViewDataSource = UICollectionViewDataSource
-  public typealias CollectionViewItem = UICollectionViewCell
-  public typealias CollectionViewLayout = UICollectionViewLayout
-  public typealias CollectionViewDelegateFlowLayout = UICollectionViewDelegateFlowLayout
-  
   public typealias Application = UIApplication
   public typealias ApplicationDelegate = UIApplicationDelegate
   
@@ -69,13 +62,6 @@ import Foundation
   
   public typealias GestureRecognizer = NSGestureRecognizer
   
-  public typealias CollectionView = NSCollectionView
-  public typealias CollectionViewDelegate = NSCollectionViewDelegate
-  public typealias CollectionViewDataSource = NSCollectionViewDataSource
-  public typealias CollectionViewItem = NSCollectionViewItem
-  public typealias CollectionViewLayout = NSCollectionViewLayout
-  public typealias CollectionViewDelegateFlowLayout = NSCollectionViewDelegateFlowLayout
-  
   public typealias Application = NSApplication
   public typealias ApplicationDelegate = NSApplicationDelegate
   
@@ -88,6 +74,18 @@ import Foundation
 
 // ------------------------------------------------------------------------------
 #if os(iOS)
+  extension TextView {
+    open var myLayer: CALayer {
+      get { return super.layer }
+      set { super.layer = newValue }
+    }
+    
+    open var myTextContainer: NSTextContainer {
+      get { return self.textContainer }
+      set { self.textContainer = newValue }
+    }
+  }
+  
   extension UserNotificationCenter {
     public static var `default` : UserNotificationCenter {
       get {
@@ -103,6 +101,10 @@ import Foundation
   
   public class Button : UIButton {
     // public var draggable : Draggable.Type?
+    public func setAttributedTitle(_ str : NSAttributedString) {
+      self.setAttributedTitle(str, for: .normal)
+    }
+
   }
 
   public protocol Draggable : AnyObject {
@@ -185,23 +187,6 @@ import Foundation
     
   }
   
-  open class CollectionViewCell : CollectionViewItem {
-    required public init() {
-      super.init(frame: CGRect.zero)
-    }
-    
-    required public init?(coder: NSCoder) {
-      fatalError("init(coder:) has not been implemented")
-    }
-    
-  }
-  
-  extension CollectionView {
-    public func invalidateLayout() {
-      self.collectionViewLayout.invalidateLayout()
-    }
-  }
-
   
 #elseif os(macOS)
   
@@ -386,6 +371,22 @@ import Foundation
         self.string = newValue
       }
     }
+    
+    open var myLayer: CALayer {
+      get { return self.layer! }
+      set { self.layer = newValue }
+    }
+
+    open var myTextContainer: NSTextContainer {
+      get { return self.textContainer! }
+      set { self.textContainer = newValue }
+    }
+
+    public var textAlignment : NSTextAlignment {
+      get { return alignment }
+      set { alignment = newValue }
+    }
+
   }
   
   /*   extension View {
@@ -413,20 +414,6 @@ import Foundation
 
   }
   
-  extension CollectionView {
-    public func register(_ cl : AnyClass, forCellWithReuseIdentifier idx: String) {
-      register(cl, forItemWithIdentifier: NSUserInterfaceItemIdentifier(rawValue: idx))
-    }
-    
-    public func register(_ cl : AnyClass, forSupplementaryViewOfKind: String, withReuseIdentifier idx: String) {
-      register(cl, forSupplementaryViewOfKind: CollectionView.SupplementaryElementKind(rawValue: forSupplementaryViewOfKind), withIdentifier: NSUserInterfaceItemIdentifier(rawValue: idx))
-    }
-
-    public func invalidateLayout() {
-      self.collectionViewLayout?.invalidateLayout()
-    }
-  }
-  
   extension Font {
     public static func italicSystemFont(ofSize : CGFloat) -> Font {
       return Font.systemFont(ofSize: ofSize)
@@ -446,23 +433,7 @@ import Foundation
       fatalError("init(coder:) has not been implemented")
     }
   }
-  
-  open class CollectionViewCell : CollectionViewItem {
-    required public init() {
-      super.init(nibName: nil, bundle: nil)
-    }
-    
-    #if os(macOS)
-    override convenience public init(nibName: NSNib.Name?, bundle: Bundle?) {
-      self.init()
-    }
-    #endif
-    
-    required public init?(coder: NSCoder) {
-      fatalError("init(coder:) has not been implemented")
-    }
-    
-  }
+
   
   extension ScrollView {
     public var showsVerticalScrollIndicator : Bool {

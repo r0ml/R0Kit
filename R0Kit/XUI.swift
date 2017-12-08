@@ -127,7 +127,8 @@ extension Notification {
     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {action in
       let aa = UIApplicationOpenSettingsURLString
       // let aa = "app-settings"
-      if let appSettings = URL(string: aa) {
+     // if let appSettings = URL(string: "App-Prefs:root=General") {
+      if let appSettings = URL(string: "App-Prefs:root=iCloud") {
         // "\(aa):root=Safari") {
         UIApplication.shared.open(appSettings, options: [:], completionHandler: nil)
       }
@@ -167,19 +168,6 @@ extension Notification {
 
 
 
-#if os(macOS)
-  public class CollectionViewFlowLayout : NSCollectionViewFlowLayout {
-    public override func shouldInvalidateLayout(forBoundsChange newBounds: NSRect) -> Bool {
-      return true
-    }
-  }
-#elseif os(iOS)
-  public class CollectionViewFlowLayout : UICollectionViewFlowLayout {
-    public override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-      return true
-    }
-}
-#endif
 
 #if os(macOS)
   extension NSBezierPath {

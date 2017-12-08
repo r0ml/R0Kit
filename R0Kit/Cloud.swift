@@ -41,6 +41,7 @@ public func findZone(_ db : CKDatabase, _ nam : String) -> CKRecordZoneID? {
     }
     if let recordZones = recordZone {
       // Here you'll have an array of CKRecordZone that is in your SharedDB!
+      recordZones.forEach { print($0.zoneID) }
       rz = recordZones.first(where: {$0.zoneID.zoneName == nam})?.zoneID
       if (rz == nil) {
         print("couldn't figure out the zoneID for product catalog")
