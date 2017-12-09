@@ -36,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E701E0811FDBAC87006FE884 /* R0Kit.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = R0Kit.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLEncoder.swift; sourceTree = "<group>"; };
 		E73873FC1FC9F9C6009C3C28 /* HTMLDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLDecoder.swift; sourceTree = "<group>"; };
 		E73C6FEC1FBFD05D009B0D7F /* RecordDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordDecoder.swift; sourceTree = "<group>"; };
@@ -57,7 +58,7 @@
 		E79E52B81FBFA23F00FCAD98 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		E79E52B91FBFA23F00FCAD98 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		E79E52BA1FBFA24000FCAD98 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
-		E79E52C31FBFC04300FCAD98 /* MyPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = MyPlayground.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		E79E52C31FBFC04300FCAD98 /* Broken.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Broken.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		E7CD96EA1FD9E01C0098D603 /* CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -90,7 +91,8 @@
 		E79E52821FBF9F9300FCAD98 = {
 			isa = PBXGroup;
 			children = (
-				E79E52C31FBFC04300FCAD98 /* MyPlayground.playground */,
+				E701E0811FDBAC87006FE884 /* R0Kit.playground */,
+				E79E52C31FBFC04300FCAD98 /* Broken.playground */,
 				E79E528E1FBF9F9300FCAD98 /* R0Kit */,
 				E79E52991FBF9F9300FCAD98 /* R0KitTests */,
 				E79E528D1FBF9F9300FCAD98 /* Products */,

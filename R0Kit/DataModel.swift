@@ -4,17 +4,17 @@ import CloudKit
 public class DataCache<T : DataModel> : NSObject {
   var _singleton : [String : T] = [:]
   var rootID: CKRecordID?
-  var dbx : CKDatabase
-  var zonid : CKRecordZoneID
+  // var dbx : CKDatabase?
+  // var zonid : CKRecordZoneID?
   
-  public init(_ db : CKDatabase, _ zid : CKRecordZoneID) {
-    zonid = zid
-    dbx = db
+  override public init( /*_ db : CKDatabase, _ zid : CKRecordZoneID */) {
+    // zonid = zid
+    // dbx = db
     super.init()
-    findShare()
+    // findShare()
   }
   
-  public func findShare() {
+  public func findShare(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     if let _ = rootID { return }
     if let z = UserDefaults.standard.data(forKey: "RootRecord") {
       // This value will be nil if it is not the machine that originally created the RootRecord
@@ -29,6 +29,7 @@ public class DataCache<T : DataModel> : NSObject {
     // deletes all existing shares
     let query = CKQuery(recordType: "RootRecord", predicate: NSPredicate(format: "TRUEPREDICATE", argumentArray: nil))
     query.sortDescriptors = [NSSortDescriptor(key: "___modTime", ascending: false)] // latest time first
+    
     dbx.perform(query, inZoneWith: zonid) { (records, error) in
       Notification.errorReport("finding root records failed", error)
       if let recs = records, recs.count > 0 {
@@ -74,7 +75,7 @@ public class DataCache<T : DataModel> : NSObject {
   }
   
   // this downloads (and stores locally) the iCloud table by running a query
-  public func fromICloud() {
+  public func fromICloud(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     let query = CKQuery(recordType: T.name, predicate: NSPredicate(value: true))
     repeatCursor(db : dbx, zoneID: zonid, query: query,
                  recordHandler: { self.cache(T.init(record: $0)) },
@@ -99,8 +100,8 @@ public class DataCache<T : DataModel> : NSObject {
     _singleton = [String : T].decode(from: FileManager.default.contents(atPath: T.filename.path)) ?? [:]
   }
   
-  public static func restoreFromFile(db: CKDatabase, zid: CKRecordZoneID) -> DataCache<T> {
-    let a = DataCache<T>( db, zid)
+  public static func restoreFromFile(/*db: CKDatabase, zid: CKRecordZoneID*/) -> DataCache<T> {
+    let a = DataCache<T>( /*db, zid*/)
     a.restoreFromFile()
     return a
   }
@@ -110,7 +111,7 @@ public class DataCache<T : DataModel> : NSObject {
     // TODO: this should trigger a delayed save() -- but additional invocations should use the same delayed save()
   }
   
-  public func uploadToICloud() {
+  public func uploadToICloud(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     // TODO: what if I have write access to the shared zone?
     
     var candidates = singleton
@@ -127,7 +128,7 @@ public class DataCache<T : DataModel> : NSObject {
     
     
     var tu : [CKRecord] = candidates.values.flatMap { (_ m : DataModel) -> CKRecord? in
-      let r = RecordEncoder(m, self.zonid)
+      let r = RecordEncoder(m, zonid)
       do {
         try m.encode(to: r )
         // I can set the parent to something else?
@@ -186,11 +187,11 @@ public class DataCache<T : DataModel> : NSObject {
       // modifies here
       pendingUpdates.removeAll()
       */
-    modifyRecords(tu)
+    modifyRecords(dbx, tu)
     
   }
   
-  func modifyRecords(_ tux : [CKRecord] ) {
+  func modifyRecords(_ dbx : CKDatabase, _ tux : [CKRecord] ) {
     let z = ceil( Double(tux.count) / 300.0)
     let m = ceil (Double(tux.count) / Double(z))
     let mx = min(tux.count, Int(m))
@@ -234,7 +235,7 @@ public class DataCache<T : DataModel> : NSObject {
           a.setParent(self.rootID);
           return a }*/
         
-        if n > 0  { if tu.count > 0  { self.modifyRecords(tu) }
+        if n > 0  { if tu.count > 0  { self.modifyRecords(dbx, tu) }
         else { Notification.statusUpdate("wrote all records") }
         } else {
           Notification.errorReport("writing records", "failed")
@@ -255,7 +256,7 @@ public class DataCache<T : DataModel> : NSObject {
         self.dbx.add(mro2)
         */
       }
-      self.dbx.add(mro)
+      dbx.add(mro)
     }
   
   /*
@@ -336,9 +337,18 @@ public protocol DataModel : Codable {
 }
 
 extension DataModel {
-  static var filename : URL  { get {
+  public static var filename : URL  { get {
+    if Bundle.allBundles.contains(where: { ($0.bundleIdentifier ?? "").hasPrefix("com.apple.dt.") }) {
+      return playgroundFilename
+    } else {
     return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(name)
     } }
+  }
+  
+  public static var playgroundFilename : URL { get {
+    let nsu = NSUserName()
+    return URL(fileURLWithPath: "/Users/\(nsu)/Documents/Shared Playground Data/\(name)")
+  }}
   
   public func toRecord(_ zid : CKRecordZoneID) -> CKRecord { // PCRecord {
     //  var r = CKRecord(recordType: name, recordID: CKRecordID(recordName: getKey(), zoneID: zid))
