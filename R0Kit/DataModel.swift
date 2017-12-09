@@ -48,9 +48,21 @@ public class DataCache<T : DataModel> : NSObject {
     return
   }
   
+  let myQ = DispatchQueue(label: "\(T.name)-saver")
+  var queued : Bool = false
+  
   public var singleton : [String : T] { get { return _singleton}
     set {
       _singleton = newValue
+      
+      if !queued {
+        queued = true
+        myQ.asyncAfter(deadline: .now() + 1.0) {
+          self.queued = false
+          self.save()
+        }
+      }
+      
       NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: [:]) )
       
       // TODO: This can be optimized by scheduling a future save, and not bothering if one is already scheduled
