@@ -36,7 +36,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		E71B96221FD85AB10053BB3F /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLEncoder.swift; sourceTree = "<group>"; };
 		E73873FC1FC9F9C6009C3C28 /* HTMLDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLDecoder.swift; sourceTree = "<group>"; };
 		E73C6FEC1FBFD05D009B0D7F /* RecordDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordDecoder.swift; sourceTree = "<group>"; };
@@ -84,7 +83,6 @@
 		E71B96211FD85AB00053BB3F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				E71B96221FD85AB10053BB3F /* AVFoundation.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

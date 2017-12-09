@@ -24,7 +24,7 @@
 
 
 #if os(iOS)
-  
+    
   open class CollectionViewCell : CollectionViewItem {
     required public init() {
       super.init(frame: CGRect.zero)
@@ -55,7 +55,12 @@
   }
   
 #elseif os(macOS)
-
+  extension CollectionViewItem {
+    convenience public init(frame: CGRect) {
+      self.init(nibName: nil, bundle: nil)
+    }
+  }
+  
   extension CollectionView {
      public convenience init(empty: Bool) {
         self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
