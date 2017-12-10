@@ -92,6 +92,12 @@ import Foundation
   public typealias Label = UILabel
 
   
+  extension UIBarButtonItem {
+    public convenience init(title: String, _ fn : @escaping () -> Void) {
+      let t = ClosX(fn)
+      self.init(title: title, style: .plain, target: t, action: t.selector)
+    }
+  }
   
   public class Button : UIButton {
     // public var draggable : Draggable.Type?
