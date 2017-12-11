@@ -15,7 +15,7 @@ public class HTMLDecoder : Decoder {
     do {
       self.htmlDoc = try XMLDocument(xmlString: s, options: XMLNode.Options.documentTidyHTML )
     } catch {
-      print(error.localizedDescription)
+      os_log("failed to create htmlDoc: %@", type: .error , error.localizedDescription )
       return nil
     }
   }

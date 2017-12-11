@@ -101,7 +101,8 @@ public class HTMLEncoder : Encoder {
       } else if let v = valu as? LocalAsset {
         encoder.html.append("<td>\(v.url.absoluteString)</td>")
       } else {
-        print("failed to html encode \(valu) for \(key.stringValue)")
+        let t = String(describing: type(of: valu))
+        os_log("failed to html encode %@ for %@", type: .error , key.stringValue, t)
       }
     }
     

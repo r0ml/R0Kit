@@ -12,10 +12,10 @@ public class Transcript : View {
   var font : Font?
   
   @objc public override func changeFont(_ x : Any?) {
-    print("change font")
+    // print("change font")
     let fm = x as? NSFontManager
-    let ff = fm?.selectedFont
-    print(ff)
+    // let ff = fm?.selectedFont
+    // print(ff)
     let oldfont = self.font == nil ? Font.systemFont(ofSize: 22) : self.font!
     
     let newfont = fm?.convert(oldfont)
@@ -39,7 +39,7 @@ public class Transcript : View {
     // before adding stuff, am I at the end?
     let vh = tblv.visibleRect.minY + tblv.visibleRect.height
     let hml = tblv.bounds.height - (lines.count == 0 ? 0 : tblv.rect(ofRow: lines.count-1).height)
-    var scrollQ = vh >= hml
+    let scrollQ = vh >= hml
     
 //    if (!scrollQ) {
 //      scrollQ = true

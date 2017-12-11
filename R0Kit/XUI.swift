@@ -125,7 +125,7 @@ extension Notification {
   public func raiseAlert(title: String, message: String, window: UIWindow? = nil, _ fn : @escaping () -> ()) {
     let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
     alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {action in
-      let aa = UIApplicationOpenSettingsURLString
+      // let aa = UIApplicationOpenSettingsURLString
       // let aa = "app-settings"
      // if let appSettings = URL(string: "App-Prefs:root=General") {
       if let appSettings = URL(string: "App-Prefs:root=iCloud") {
@@ -180,6 +180,15 @@ extension Notification {
     public func addLine(to: CGPoint) {
       self.line(to: to)
     }
+    
+    public func addCurve(to: CGPoint, controlPoint1: CGPoint, controlPoint2: CGPoint) {
+      self.curve(to: to, controlPoint1: controlPoint1, controlPoint2: controlPoint2)
+    }
+    
+    public var usesEvenOddFillRule : Bool {
+      get { return self.windingRule == .evenOddWindingRule }
+      set { self.windingRule = newValue ? .evenOddWindingRule : .nonZeroWindingRule }
+    }
 }
   
   extension NSBezierPath.LineCapStyle {
@@ -188,6 +197,7 @@ extension Notification {
   
   extension NSBezierPath.LineJoinStyle {
     static let bevel = bevelLineJoinStyle
+    static let round = roundLineJoinStyle
   }
   
   public func UIGraphicsGetCurrentContext() -> CGContext? {

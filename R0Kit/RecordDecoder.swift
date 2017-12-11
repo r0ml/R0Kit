@@ -81,7 +81,7 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
           try d.write(to: tempurl, options: .atomicWrite)
           return LocalAsset(tempurl) as! T
         } catch {
-          print("trying to save asset: ", error.localizedDescription)
+          os_log("failed to save asset %@: %@", type: .error , key.stringValue, error.localizedDescription )
         }
       }
     }

@@ -4,15 +4,6 @@ import CloudKit
 public class DataCache<T : DataModel> : NSObject {
   var _singleton : [String : T] = [:]
   var rootID: CKRecordID?
-  // var dbx : CKDatabase?
-  // var zonid : CKRecordZoneID?
-  
-  override public init( /*_ db : CKDatabase, _ zid : CKRecordZoneID */) {
-    // zonid = zid
-    // dbx = db
-    super.init()
-    // findShare()
-  }
   
   public func findShare(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     if let _ = rootID { return }
@@ -26,6 +17,8 @@ public class DataCache<T : DataModel> : NSObject {
     
     var recid : CKRecordID?
     let sem = DispatchSemaphore(value: 0)
+    
+    // FIXME:  Do I really want to delete all shares?
     // deletes all existing shares
     let query = CKQuery(recordType: "RootRecord", predicate: NSPredicate(format: "TRUEPREDICATE", argumentArray: nil))
     query.sortDescriptors = [NSSortDescriptor(key: "___modTime", ascending: false)] // latest time first
@@ -48,6 +41,8 @@ public class DataCache<T : DataModel> : NSObject {
     return
   }
   
+  // these are used to schedule a save one second in the future.
+  // this allows for multiple updates without saving after each one.
   let myQ = DispatchQueue(label: "\(T.name)-saver")
   var queued : Bool = false
   
@@ -62,17 +57,13 @@ public class DataCache<T : DataModel> : NSObject {
           self.save()
         }
       }
-      
-      NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: [:]) )
-      
-      // TODO: This can be optimized by scheduling a future save, and not bothering if one is already scheduled
-      // FIXME:  how to indicate that the datamodel is "dirty" and needs to be saved
     }
   }
   
   public func save() {
+    // This notification is really just for updating a status line to indicate that a save was attempted.
     Notification.statusUpdate("\(singleton.count) \(T.name) saved")
-
+    
     let fnam = T.filename
     let g = fnam.deletingLastPathComponent()
     if !FileManager.default.fileExists(atPath: g.path) {
@@ -82,7 +73,7 @@ public class DataCache<T : DataModel> : NSObject {
     do {
       try singleton.encode()?.write(to: fnam)
     } catch let err {
-      print("writing \(T.name) to \(T.filename): \(err.localizedDescription)")
+      os_log("writing %@ to %@ failed: %@", type: .error , T.name, T.filename.path, err.localizedDescription )
     }
   }
   
@@ -94,253 +85,174 @@ public class DataCache<T : DataModel> : NSObject {
                  blockHandler: {}, completionHandler: { self.pbCopy(); self.save() } )
   }
   
+  // FIXME: I should figure out how to get this to work on iOS
   public func pbCopy() {
     #if os(macOS)
-    let j = Array(_singleton.values)
-    NSPasteboard.general.clearContents()
-    
-    let ke : [String] = j.map { let he = HTMLEncoder(); try? $0.encode(to: he); return he.html  }
-    var kj = ke.reduce("<html><head><meta http-equiv=Content-Type content=\"text/html; charset=utf-8\"></head><body><table>") {
-      $0.appending("<tr>\($1)</tr>") }
-    kj.append("</table></body></html>")
-   // NSPasteboard.general.setData(kj.data(using: .utf8), forType: .html)
-   NSPasteboard.general.setString( kj, forType: .html )
+      let j = Array(_singleton.values)
+      NSPasteboard.general.clearContents()
+      
+      let ke : [String] = j.map { let he = HTMLEncoder(); try? $0.encode(to: he); return he.html  }
+      var kj = ke.reduce("<html><head><meta http-equiv=Content-Type content=\"text/html; charset=utf-8\"></head><body><table>") {
+        $0.appending("<tr>\($1)</tr>") }
+      kj.append("</table></body></html>")
+      // NSPasteboard.general.setData(kj.data(using: .utf8), forType: .html)
+      NSPasteboard.general.setString( kj, forType: .html )
     #endif
   }
-
+  
   public func restoreFromFile() {
     _singleton = [String : T].decode(from: FileManager.default.contents(atPath: T.filename.path)) ?? [:]
   }
   
-  public static func restoreFromFile(/*db: CKDatabase, zid: CKRecordZoneID*/) -> DataCache<T> {
-    let a = DataCache<T>( /*db, zid*/)
+  public static func restoreFromFile() -> DataCache<T> {
+    let a = DataCache<T>()
     a.restoreFromFile()
     return a
   }
   
   public func cache(_ v : T?) {
-    if let v = v  { singleton[v.getKey()] = v }
-    // TODO: this should trigger a delayed save() -- but additional invocations should use the same delayed save()
+    if let v = v  { singleton[v.getKey()] = v
+      // TODO: this should trigger a delayed save() -- but additional invocations should use the same delayed save()
+      
+      // this creates a notification so that views that depend on this model can update themselves
+      // FIXME:  if I could indicate whether it was an insert, delete, or update -- and what was being modified,
+      //         that would make view udpates smoother.
+      NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: [:]) )
+    }
   }
   
   public func uploadToICloud(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     // TODO: what if I have write access to the shared zone?
     
     var candidates = singleton
-    var pendingUpdates = [CKRecord]()
     
-    let cmp = candidates.values.map {
-          CKRecordID(recordName: $0.getKey(), zoneID: zonid) }
-    
-    // probably what needs to be done here is that all of the record ids for all of the sub-records
-    // need to be fetched.
-    
-    // then the Records-to-be-saved need to be merged with the records-that-were-already-there
-    // when I cache locally, to I save the "records-that-were-already-there metadata?
-    
-    
-    var tu : [CKRecord] = candidates.values.flatMap { (_ m : DataModel) -> CKRecord? in
+    // FIXME:  am I keeping track of which records have been locally modified -- and only uploading those?
+    let tux : [CKRecord] = candidates.values.flatMap { (_ m : DataModel) -> CKRecord? in
+      // at one time, the record encoder returned an array of records to support the ORM-like notion that
+      // an object could have master/detail records.
+      // Now the mapping is: one object = one record.
       let r = RecordEncoder(m, zonid)
       do {
         try m.encode(to: r )
-        // I can set the parent to something else?
+        // FIXME:  are there scenarios where the parent wants to be something other than the rootID
+        //    e.g.  the parent of a frame is the style?
         if (r.record.parent == nil) {  r.record.setParent(self.rootID) }
-        return r.record // r.record.allRecords
+        return r.record
       } catch {
-        print(error)
+        os_log("encoding data to %@ record failed: %@", type: .error , type(of: m).name, error.localizedDescription )
         return nil
       }
     }
     
     // FIXME:  If the local records don't have metadata, then they are presumably inserts
-    /*
-    let fo = CKFetchRecordsOperation(recordIDs: cmp)
-    fo.qualityOfService = .userInitiated
-    
-    // this is reading the existing (if any) records to be updated
-    fo.perRecordCompletionBlock = { rec, rid, err in
-      if var rr = rec,
-        let r = candidates[rr.recordID.recordName]
-      {
-        
-        let re = RecordEncoder(record: &rr)
-        do {
-          try r.encode(to: re)
-        } catch {
-          print(error)
-        }
-        
-        let pu = re.record.allRecords
-        // this is the pending update records
-        pendingUpdates.append(contentsOf: pu)
-        
-        // as part of the encoding -- can I also acquire the affected subrecords?
-        
-        candidates.removeValue(forKey: rr.recordID.recordName)
-      } else {
-        os_log("fetch datamodel key error: %@", type:.error, err?.localizedDescription ?? "unknown")
-      }
-      
-      // print("got \(rec) \(rid) \(err)")
+    let sn = 300
+    for i in stride(from: 0, to: tux.count, by: sn) {
+      modifyRecords(dbx, Array(tux[i..<min(tux.count, i+sn)]))
     }
-    fo.fetchRecordsCompletionBlock =  { recs, err in
-      if let e = err {
-        if let cke = e as? CKError,
-          let ue = cke.userInfo["NSUnderlyingError"],
-          let ne = ue as? NSError {
-          if ne.code == 1011 {
-          } else {
-            Notification.errorReport("fetching data model records", e)
-            return
-          }
-        }
-      }
-      let z = pendingUpdates
-      // modifies here
-      pendingUpdates.removeAll()
-      */
-    modifyRecords(dbx, tu)
     
   }
   
   func modifyRecords(_ dbx : CKDatabase, _ tux : [CKRecord] ) {
-    let z = ceil( Double(tux.count) / 300.0)
-    let m = ceil (Double(tux.count) / Double(z))
-    let mx = min(tux.count, Int(m))
-    var tu = tux
-    let mm = Array(tux[0..<mx])
-    
-    /*while(tu.count > 0) {
-      let mx = min(tu.count, Int(m))
-      let tux = Array(tu[0..<mx])
-      // tu.removeFirst(mx)
-      // modifyRecords(tux)
-    }*/
-
-    let mro = CKModifyRecordsOperation(recordsToSave: mm, recordIDsToDelete: nil)
+    let mro = CKModifyRecordsOperation(recordsToSave: tux, recordIDsToDelete: nil)
     if #available(iOS 11.0, *) {
-        let oc = CKOperationConfiguration()
-        oc.timeoutIntervalForRequest = 10
-        mro.configuration = oc
-      }
-      mro.modifyRecordsCompletionBlock = { recs, rids, error in
-        if let err = error {
-          os_log("modify %@ failed: %@", type: .error , T.name, err.localizedDescription )
-        }
-        os_log("modify %@ wrote %d records", type: .info, T.name, recs?.count ?? 0)
-        
-        var n = 0
-        if let xrecs = recs, xrecs.count > 0 {
-          xrecs.forEach { wrot in
-            if let x = tu.index(where: { wrot.recordID.recordName == $0.recordID.recordName }) {
-              tu.remove(at: x)
-              n += 1
-            }
-          }
-        }
-        
-        Notification.statusUpdate("\(n) records updated")
-        // inserts here
-        /*let tox = candidates.values.map { $0 }
-        let pendingInserts : [CKRecord] = tox.map { v -> CKRecord in
-          let a = v.toRecord(self.zonid);
-          a.setParent(self.rootID);
-          return a }*/
-        
-        if n > 0  { if tu.count > 0  { self.modifyRecords(dbx, tu) }
-        else { Notification.statusUpdate("wrote all records") }
-        } else {
-          Notification.errorReport("writing records", "failed")
-        }
-        
-        /*
-        let mro2 = CKModifyRecordsOperation(recordsToSave: tu, recordIDsToDelete: nil)
-        mro2.savePolicy = CKRecordSavePolicy.allKeys
-        mro2.modifyRecordsCompletionBlock = { recs, rids, error in
-          if let err = error {
-            os_log("insert %@ failed: %@", type: .error , T.name, err.localizedDescription )
-          }
-          os_log("insert %@ wrote %d records", type: .info, T.name, recs?.count ?? 0)
-          
-          // FIXME: Now I want to trigger "fetchChanges"
-          }
-        }
-        self.dbx.add(mro2)
-        */
-      }
-      dbx.add(mro)
+      let oc = CKOperationConfiguration()
+      oc.timeoutIntervalForRequest = 10
+      mro.configuration = oc
     }
-  
-  /*
-    fo.completionBlock = {
-      print("now what?")
+    mro.modifyRecordsCompletionBlock = { recs, rids, error in
+      if let err = error {
+        os_log("modify %@ failed: %@", type: .error , T.name, err.localizedDescription )
+      }
+      os_log("modify %@ wrote %d records", type: .info, T.name, recs?.count ?? 0)
+      
+      // this part figures out which records were successfully written, and
+      // leaves tux with the remainder that weren't sucessfully written.
+      // this presumes I know what to do with the ones that weren't successfully written
+      
+      var n = 0
+      var tuxx = tux
+      if let xrecs = recs, xrecs.count > 0 {
+        xrecs.forEach { wrot in
+          if let x = tuxx.index(where: { wrot.recordID.recordName == $0.recordID.recordName }) {
+            tuxx.remove(at: x)
+            n += 1
+          }
+        }
+      }
+      // at this point, tuxx has the records which were not successfuly written.
+      
+      Notification.statusUpdate("\(n) records updated")
     }
-    
-    self.dbx.add(fo)
-  }*/
+    dbx.add(mro)
+  }
   
+  // views which need to be notified up updates can use this.
   public func watch(using block: @escaping (Notification) -> Void) {
     NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: T.name), object: nil, queue: nil, using: block)
   }
-
+  
+  // FIXME: If I want to paste in data, get this working again.
   // NSPasteboardReading -------------------------------------------------------------------------------------
   /* public required init?(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
-    switch( type ) {
-      /*case .string: // public.utf8-plain-text
-       // FIXME
-       do { BulletPoints.lastImport = try JSONDecoder().decode([String:[String]].self, from: propertyList as! Data )}
-       catch {
-       os_log("json decoding failed for bullets: %@", type: .error,  error.localizedDescription)
-       }*/
-    case .html: // public.html
-      do {
-        let zz = try XMLDocument(data: propertyList as! Data, options: XMLNode.Options.documentTidyHTML )
-        if let yy = try zz.rootElement()?.nodes(forXPath: "//table"),
-          yy.count > 0 {
-          let xx = try yy[0].nodes(forXPath: "*\/tr")
-          let qq = xx.map { (n : XMLNode) -> [String] in
-            do { var ss = try n.nodes(forXPath: "td//text()").map { $0.stringValue ?? "??" }
-              while(ss.last == "\n") { ss.removeLast() }
-              return ss
-            }
-            catch { return [""] }
-          }
-          var bb = [String:T]()
-          qq.forEach { strs in
-            if strs.count > 0 {
-              let a = T(cmsID: strs[0], bullets: Array(strs[1...]))
-              bb[a.getKey()] = a
-            }
-          }
-        }
-        else {
-          os_log("html parsing failed", type: .error)
-        }
-        // p (try zz.rootElement()?.nodes(forXPath: "//table"))![0]!.nodes(forXPath: "*\/tr/td//text()").debugDescription
-      } catch {
-        os_log("xml document parsing failed: %@", type: .error, error.localizedDescription)
-      }
-      /*if let z = HTMLParser(data: propertyList as! Data).parseTable() {
-       os_log("don't know how to paste html %@", type: .error, z)
-       } else {
-       os_log("didn't parse HTML table")
-       return nil
-       }*/
-    default:
-      os_log("don't know how to paste this: %@", type: .error, type.rawValue )
-      return nil
-    }
-    
-  }
-
-  public static func readableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
-    return [NSPasteboard.PasteboardType.html,
-            NSPasteboard.PasteboardType.string,
-            NSPasteboard.PasteboardType(rawValue: "public.json")]
-  }
-  */
+   switch( type ) {
+   /*case .string: // public.utf8-plain-text
+   // FIXME
+   do { BulletPoints.lastImport = try JSONDecoder().decode([String:[String]].self, from: propertyList as! Data )}
+   catch {
+   os_log("json decoding failed for bullets: %@", type: .error,  error.localizedDescription)
+   }*/
+   case .html: // public.html
+   do {
+   let zz = try XMLDocument(data: propertyList as! Data, options: XMLNode.Options.documentTidyHTML )
+   if let yy = try zz.rootElement()?.nodes(forXPath: "//table"),
+   yy.count > 0 {
+   let xx = try yy[0].nodes(forXPath: "*\/tr")
+   let qq = xx.map { (n : XMLNode) -> [String] in
+   do { var ss = try n.nodes(forXPath: "td//text()").map { $0.stringValue ?? "??" }
+   while(ss.last == "\n") { ss.removeLast() }
+   return ss
+   }
+   catch { return [""] }
+   }
+   var bb = [String:T]()
+   qq.forEach { strs in
+   if strs.count > 0 {
+   let a = T(cmsID: strs[0], bullets: Array(strs[1...]))
+   bb[a.getKey()] = a
+   }
+   }
+   }
+   else {
+   os_log("html parsing failed", type: .error)
+   }
+   // p (try zz.rootElement()?.nodes(forXPath: "//table"))![0]!.nodes(forXPath: "*\/tr/td//text()").debugDescription
+   } catch {
+   os_log("xml document parsing failed: %@", type: .error, error.localizedDescription)
+   }
+   /*if let z = HTMLParser(data: propertyList as! Data).parseTable() {
+   os_log("don't know how to paste html %@", type: .error, z)
+   } else {
+   os_log("didn't parse HTML table")
+   return nil
+   }*/
+   default:
+   os_log("don't know how to paste this: %@", type: .error, type.rawValue )
+   return nil
+   }
+   
+   }
+   
+   public static func readableTypes(for pasteboard: NSPasteboard) -> [NSPasteboard.PasteboardType] {
+   return [NSPasteboard.PasteboardType.html,
+   NSPasteboard.PasteboardType.string,
+   NSPasteboard.PasteboardType(rawValue: "public.json")]
+   }
+   */
 }
 
+// To be Codable into a Record, I want to know the key (used for the RecordName)
+// I will store encodedSystemFields in order to sync with the iCloud storage -- but the Codable/Decodable
+// wants to treat that specially
 public protocol DataModel : Codable {
   // return the key from the object
   func getKey() -> String
@@ -348,22 +260,26 @@ public protocol DataModel : Codable {
   var encodedSystemFields : Data? { get set }
 }
 
+// the local data is stored on a file and retrieved therefrom.
+// in order to support Playgrounds, I use a special filename in the Shared Playground Data folder
+// Somebody needs to put a copy of the required data into that folder, since Playgrounds cannot access CloudKit
 extension DataModel {
   public static var filename : URL  { get {
     if Bundle.allBundles.contains(where: { ($0.bundleIdentifier ?? "").hasPrefix("com.apple.dt.") }) {
       return playgroundFilename
     } else {
-    return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(name)
+      return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(name)
     } }
   }
   
   public static var playgroundFilename : URL { get {
     let nsu = NSUserName()
     return URL(fileURLWithPath: "/Users/\(nsu)/Documents/Shared Playground Data/\(name)")
-  }}
+    }}
   
-  public func toRecord(_ zid : CKRecordZoneID) -> CKRecord { // PCRecord {
-    //  var r = CKRecord(recordType: name, recordID: CKRecordID(recordName: getKey(), zoneID: zid))
+  // If this data was created from iCloud, it has system fields, and knows which zone it lives in.
+  // for new data (inserts), it needs to know the zone in order to create the record.
+  public func toRecord(_ zid : CKRecordZoneID) -> CKRecord {
     if let es = encodedSystemFields {
       let coder = NSKeyedUnarchiver(forReadingWith: es)
       coder.requiresSecureCoding = true
@@ -372,11 +288,13 @@ extension DataModel {
         return re
       }
     }
-    let re = RecordEncoder(type(of: self).name, getKey(), zid)
+    let n = type(of: self).name
+    let k = getKey()
+    let re = RecordEncoder(n, k, zid)
     do {
       try self.encode(to: re)
     } catch {
-      print(error)
+      os_log("record encoding of %@ (%@) failed: %@", type: .error , n, k, error.localizedDescription )
     }
     return re.record
   }
@@ -385,7 +303,7 @@ extension DataModel {
     do {
       try self.init(from: RecordDecoder(record))
     } catch {
-      print("decoding \(record.recordType)", error.localizedDescription)
+      os_log("decoding %@ failed: %@", type: .error , record.recordType, error.localizedDescription )
       return nil
     }
     
@@ -401,27 +319,19 @@ extension DataModel {
   }
 }
 
-public func dumpData(db : CKDatabase, zoneID: CKRecordZoneID, table : String) {
- repeatCursor(db: db, zoneID: zoneID, query: CKQuery.init(recordType: table, predicate: NSPredicate(value: true)),
- recordHandler: { print($0.debugDescription) },
- blockHandler: { print("block ended")},
- completionHandler: { print("all done") })
- }
+// FIXME: I wrote this for debugging, but given "fromICloud", I don't think it is useful
+/*
+ public func dumpData(db : CKDatabase, zoneID: CKRecordZoneID, table : String) {
+  repeatCursor(db: db, zoneID: zoneID, query: CKQuery.init(recordType: table, predicate: NSPredicate(value: true)),
+               recordHandler: { print($0.debugDescription) },
+               blockHandler: { print("block ended")},
+               completionHandler: { print("all done") })
+}
+ */
 
 public class LocalAsset : Codable {
   public var url : URL // local file URL
-  
-  public init(_ u : URL) {
-    url = u
-  }
-  
-  public var data : Data? { get
-  { return try? Data(contentsOf: url)
-    }
-  }
-  
-  public var image : Image? { get
-  { return data?.image
-  }
-  }
+  public init(_ u : URL) { url = u }
+  public var data : Data? { get { return try? Data(contentsOf: url) } }
+  public var image : Image? { get { return data?.image } }
 }

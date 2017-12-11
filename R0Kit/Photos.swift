@@ -30,7 +30,7 @@
       super.init()
 
       library.addObserver(self, forKeyPath: MLMediaLibraryPropertyKeys.mediaSourcesKey, options: NSKeyValueObservingOptions.new, context: nil)
-      if let z = library.mediaSources {}
+      if let _ = library.mediaSources {}
     }
     
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -49,7 +49,7 @@
           swatchGroup = cg.childGroups!.filter { $0.typeIdentifier == "com.apple.Photos.Album" && $0.name == self.album }.first
         }
         self.swatchGroup.addObserver(self, forKeyPath: MLMediaLibraryPropertyKeys.mediaObjectsKey, context: nil)
-        if let mo = self.swatchGroup.mediaObjects { }
+        if let _ = self.swatchGroup.mediaObjects { }
       } else if keyPath == MLMediaLibraryPropertyKeys.mediaObjectsKey {
         self.swatchGroup.removeObserver(self, forKeyPath: MLMediaLibraryPropertyKeys.mediaObjectsKey)
         // self.rootMediaGroup.removeObserver(self, forKeyPath: MLMediaLibraryPropertyKeys.mediaObjectsKey)

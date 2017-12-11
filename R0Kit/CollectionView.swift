@@ -24,7 +24,7 @@
 
 
 #if os(iOS)
-    
+  
   open class CollectionViewCell : CollectionViewItem {
     required public init() {
       super.init(frame: CGRect.zero)
@@ -37,7 +37,6 @@
     required public init?(coder: NSCoder) {
       fatalError("init(coder:) has not been implemented")
     }
-    
   }
   
   extension CollectionView {
@@ -66,10 +65,10 @@
   }
   
   extension CollectionView {
-     public convenience init(empty: Bool) {
-        self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
-      }
-
+    public convenience init(empty: Bool) {
+      self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
+    }
+    
     public func register<T : IdentifiableClass>(_ cl : T.Type) {
       register(cl as! AnyClass, forCellWithReuseIdentifier: cl.identifier)
     }
@@ -90,9 +89,7 @@
       self.init(frame: frame)
       self.collectionViewLayout = collectionViewLayout
     }
-    
   }
-  
   
   open class CollectionViewCell : CollectionViewItem {
     required public init() {
@@ -106,7 +103,6 @@
     required public init?(coder: NSCoder) {
       fatalError("init(coder:) has not been implemented")
     }
-    
   }
   
   public class CollectionViewFlowLayout : NSCollectionViewFlowLayout {
@@ -123,41 +119,37 @@ public protocol IdentifiableClass {
 
 #if os(macOS)
   extension CollectionView {
- /* open func collectionView(_ collectionView: CollectionView, cellForItemAt indexPath: IndexPath) -> CollectionViewItem {
-      return CollectionViewItem()
-    }
-  
-    public func collectionView( _ collectionView: CollectionView, itemForRepresentedObjectAt indexPath: IndexPath) -> CollectionViewItem  {
-      return self.collectionView(collectionView, cellForItemAt: indexPath)
-    }
-   */
     public func makeCell<T : IdentifiableClass>(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> T {
-    if let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? T {
-      fn(item)
-      return item
-    } else {
-      let z = T.init()
-      fn(z)
-      return z
-    }
+      if let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? T {
+        fn(item)
+        return item
+      } else {
+        let z = T.init()
+        fn(z)
+        return z
+      }
     }
   }
   
 #elseif os(iOS)
   extension CollectionView {
- // public func collectionView(_ collectionView: CollectionView, cellForItemAt indexPath: IndexPath) -> CollectionViewItem {
- //   }
-    
     public func makeCell<T : IdentifiableClass>(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> T {
-    if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? T {
-      fn(cell)
-      return cell
+      if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? T {
+        fn(cell)
+        return cell
+      }
+      print("cant get here")
+      return T()
     }
-    print("cant get here")
-    return T()
-  }
   }
 #endif
+
+// because macos wants "itemForRepresentedObjectAt"  and iOS wants "cellForItemAt" there doesn't appear to be a way
+// to do this with typealiasing
+// So I create a subclass to have a single method that serves both purposes.
+// The required method (which needs to be overridden) now becomes: collectionView(cellForItemAt:in:)->CollectionViewItem
+// which should look like:
+// return collectionView.makeCell(indexPath) { your code here }
 
 open class CollectionViewController : ViewController, CollectionViewDataSource {
   open func collectionView(_ collectionView: CollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -166,9 +158,9 @@ open class CollectionViewController : ViewController, CollectionViewDataSource {
   
   #if os(macOS)
   public func collectionView(_ collectionView : CollectionView,
-                           itemForRepresentedObjectAt indexPath: IndexPath) -> CollectionViewItem {
+                             itemForRepresentedObjectAt indexPath: IndexPath) -> CollectionViewItem {
     return self.collectionView(cellForItemAt: indexPath, in: collectionView)
-    }
+  }
   #elseif os(iOS)
   public func collectionView(_ collectionView : CollectionView,
                              cellForItemAt indexPath: IndexPath) -> CollectionViewItem {
@@ -177,7 +169,12 @@ open class CollectionViewController : ViewController, CollectionViewDataSource {
   #endif
   
   open func collectionView( cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> CollectionViewItem {
-    return CollectionViewItem()
+    return collectionView.makeCell(indexPath) { (_ : CollectionViewItem) -> Void in }
   }
+}
 
+extension CollectionViewItem : IdentifiableClass {
+  public static var identifier: String {
+    return "GenericCollectionViewItem"
+  }
 }

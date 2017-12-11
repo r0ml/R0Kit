@@ -133,7 +133,8 @@ public class RecordEncoder : Encoder {
       } else if let v = valu as? LocalAsset {
         encoder.record[key.stringValue] = CKAsset(fileURL: v.url)
       } else {
-        print("failed to encode \(valu) for \(key.stringValue)")
+        let t = String(describing: type(of: valu))
+        os_log("failed to record encode %@ for %@", type: .error , key.stringValue, t )
       }
      }
     

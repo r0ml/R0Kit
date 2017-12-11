@@ -31,6 +31,9 @@ public func repeatCursor(db : CKDatabase, zoneID zid: CKRecordZoneID, query qry 
   db.add(op)
 }
 
+// find the zone with the given name.
+// assuming that data is segregated by zone (because of the update notifications)
+// this is how I find the data I want.
 public func findZone(_ db : CKDatabase, _ nam : String) -> CKRecordZoneID? {
   var rz : CKRecordZoneID?
   

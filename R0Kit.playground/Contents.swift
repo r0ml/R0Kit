@@ -3,6 +3,7 @@
 @testable import WPKit
 import PlaygroundSupport
 
+let z = [1,2,3,4]
 
 var str = "Hello, playground"
 /*

@@ -59,6 +59,7 @@
 		E79E52B91FBFA23F00FCAD98 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		E79E52BA1FBFA24000FCAD98 /* module.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		E79E52C31FBFC04300FCAD98 /* Broken.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Broken.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		E7C384681FDDF2170008F729 /* Icon.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Icon.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		E7CD96EA1FD9E01C0098D603 /* CollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -91,6 +92,7 @@
 		E79E52821FBF9F9300FCAD98 = {
 			isa = PBXGroup;
 			children = (
+				E7C384681FDDF2170008F729 /* Icon.playground */,
 				E701E0811FDBAC87006FE884 /* R0Kit.playground */,
 				E79E52C31FBFC04300FCAD98 /* Broken.playground */,
 				E79E528E1FBF9F9300FCAD98 /* R0Kit */,
