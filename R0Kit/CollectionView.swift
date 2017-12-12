@@ -25,7 +25,9 @@
 
 #if os(iOS)
   
-  open class CollectionViewCell : CollectionViewItem {
+  open class CollectionViewCell : CollectionViewItem, IdentifiableClass {
+    open class var identifier : String { return "GenericCollectionViewCell" }
+    
     required public init() {
       super.init(frame: CGRect.zero)
     }
@@ -91,7 +93,9 @@
     }
   }
   
-  open class CollectionViewCell : CollectionViewItem {
+  open class CollectionViewCell : CollectionViewItem, IdentifiableClass {
+    open class var identifier : String { return "GenericCollectionViewCell" }
+    
     required public init() {
       super.init(nibName: nil, bundle: nil)
     }
@@ -169,12 +173,16 @@ open class CollectionViewController : ViewController, CollectionViewDataSource {
   #endif
   
   open func collectionView( cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> CollectionViewItem {
-    return collectionView.makeCell(indexPath) { (_ : CollectionViewItem) -> Void in }
+    return collectionView.makeCell(indexPath) { (_ : CollectionViewCell) -> Void in }
   }
 }
 
+/*
 extension CollectionViewItem : IdentifiableClass {
-  public static var identifier: String {
+  open static var identifier: String {
+    get {
     return "GenericCollectionViewItem"
   }
+  }
 }
+ */

@@ -61,7 +61,7 @@ public class RecordEncoder : Encoder {
     record = CKRecord.init(recordType: s, recordID: CKRecordID.init(recordName: n, zoneID: zid))
   }
   
-  public init(_ m : DataModel, _ zid : CKRecordZoneID) {
+  public init<T : DataModel>(_ m : T, _ zid : CKRecordZoneID) {
     zoneID = zid
     var pr : CKRecord
     if let esf = m.encodedSystemFields {

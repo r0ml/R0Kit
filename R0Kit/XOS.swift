@@ -266,11 +266,6 @@ import Foundation
     public func scaleMe() {
       self.imageScaling = .scaleProportionallyUpOrDown
     }
-    
-    public var alpha : CGFloat {
-      get { return self.alphaValue }
-      set { self.alphaValue = newValue }
-    }
   }
   
   public extension NSImage {
@@ -361,6 +356,11 @@ import Foundation
     
     public func setNeedsLayout() {
       self.needsLayout = true
+    }
+    
+    public var alpha : CGFloat {
+      get { return self.alphaValue }
+      set { self.alphaValue = newValue }
     }
 
   }

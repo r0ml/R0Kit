@@ -127,7 +127,7 @@ public class DataCache<T : DataModel> : NSObject {
     var candidates = singleton
     
     // FIXME:  am I keeping track of which records have been locally modified -- and only uploading those?
-    let tux : [CKRecord] = candidates.values.flatMap { (_ m : DataModel) -> CKRecord? in
+    let tux : [CKRecord] = candidates.values.flatMap { (_ m : T) -> CKRecord? in
       // at one time, the record encoder returned an array of records to support the ORM-like notion that
       // an object could have master/detail records.
       // Now the mapping is: one object = one record.
@@ -258,6 +258,10 @@ public protocol DataModel : Codable {
   func getKey() -> String
   static var name : String { get }
   var encodedSystemFields : Data? { get set }
+  static func downloadFromAPI()
+  // static func fromICloud(_ : CKDatabase, _ : CKRecordZoneID)
+  // static func uploadToICloud( _ : CKDatabase, _ : CKRecordZoneID)
+  static var base : DataCache<Self> { get }
 }
 
 // the local data is stored on a file and retrieved therefrom.
