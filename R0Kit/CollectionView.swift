@@ -22,7 +22,6 @@
   
 #endif
 
-
 #if os(iOS)
   
   open class CollectionViewCell : CollectionViewItem, IdentifiableClass {
@@ -95,6 +94,7 @@
   
   open class CollectionViewCell : CollectionViewItem, IdentifiableClass {
     open class var identifier : String { return "GenericCollectionViewCell" }
+    public var contentView = View()
     
     required public init() {
       super.init(nibName: nil, bundle: nil)
@@ -106,6 +106,10 @@
     
     required public init?(coder: NSCoder) {
       fatalError("init(coder:) has not been implemented")
+    }
+    
+    open override func loadView() {
+      self.view = self.contentView
     }
   }
   
