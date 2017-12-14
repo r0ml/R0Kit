@@ -43,6 +43,24 @@ public class DataModelError : Error {
   }
 }
 
+extension CKAsset {
+  public func getLocalAsset(key : String, record : CKRecord) -> LocalAsset? {
+    let tempdir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(record.recordID.zoneID.zoneName).appendingPathComponent(record.recordType).appendingPathComponent(key)
+    // FIXME: create a directory for this zone?
+    do {
+      try FileManager.default.createDirectory(atPath: tempdir.path, withIntermediateDirectories: true, attributes: nil)
+      let tempurl = tempdir.appendingPathComponent(record.recordID.recordName)
+      let d = try Data(contentsOf: self.fileURL)
+      try d.write(to: tempurl, options: .atomicWrite)
+      return LocalAsset(tempurl)
+    } catch {
+      os_log("failed to save asset %@: %@", type: .error , key, error.localizedDescription )
+    }
+    return nil
+  }
+}
+
+
 fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContainerProtocol {
   var decoder : RecordDecoder
   var codingPath: [CodingKey] { return [] }
@@ -72,17 +90,7 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
       } else if typ == LocalAsset.self, let z = v as? CKAsset {
         // let filename = ProcessInfo.processInfo.globallyUniqueString
         // FIXME:  I might also need ownerName from zone
-        let tempdir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(decoder.record.recordID.zoneID.zoneName).appendingPathComponent(decoder.record.recordType).appendingPathComponent(key.stringValue)
-        // FIXME: create a directory for this zone?
-        do {
-          try FileManager.default.createDirectory(atPath: tempdir.path, withIntermediateDirectories: true, attributes: nil)
-          let tempurl = tempdir.appendingPathComponent(decoder.record.recordID.recordName)
-          let d = try Data(contentsOf: z.fileURL)
-          try d.write(to: tempurl, options: .atomicWrite)
-          return LocalAsset(tempurl) as! T
-        } catch {
-          os_log("failed to save asset %@: %@", type: .error , key.stringValue, error.localizedDescription )
-        }
+        return z.getLocalAsset(key: key.stringValue, record: decoder.record) as! T
       }
     }
     throw DataModelError("nil value for \(key)")
