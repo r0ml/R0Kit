@@ -82,7 +82,11 @@ public class DataCache<T : DataModel> : NSObject {
     let query = CKQuery(recordType: T.name, predicate: NSPredicate(value: true))
     repeatCursor(db : dbx, zoneID: zonid, query: query,
                  recordHandler: { self.cache(T.init(record: $0)) },
-                 blockHandler: {}, completionHandler: { self.pbCopy(); self.save() } )
+                 blockHandler: {}, completionHandler: { self.pbCopy();
+                  // self.save()
+    } )
+    
+    T.downloadRelated(dbx, zonid)
   }
   
   // FIXME: I should figure out how to get this to work on iOS
@@ -150,6 +154,13 @@ public class DataCache<T : DataModel> : NSObject {
       modifyRecords(dbx, Array(tux[i..<min(tux.count, i+sn)]))
     }
     
+    // FIXME
+    // I could collect all the operations from the above operations, and add them as dependencies
+    // for what comes next.
+    
+    T.uploadRelated(dbx, zonid)
+    
+    
   }
   
   func modifyRecords(_ dbx : CKDatabase, _ tux : [CKRecord] ) {
@@ -161,7 +172,16 @@ public class DataCache<T : DataModel> : NSObject {
     }
     mro.modifyRecordsCompletionBlock = { recs, rids, error in
       if let err = error {
+        // FIXME:  1) I want: (err as! CKError).partialErrorsByItemID.debugDescription
+        // 2) If the error is "record to insert already exists" -- that means I should probably
+        //    refresh by reloading from iCloud.
+        //    BUT I might want to keep any local changes ?
         os_log("modify %@ failed: %@", type: .error , T.name, err.localizedDescription )
+        let a = (err as! CKError).partialErrorsByItemID!
+        a.forEach { v in
+          let (key, value) = v
+          os_log("%@: %@)", type: .error, (key as! CKRecordID).recordName, (value as! CKError).localizedDescription)
+        }
       }
       os_log("modify %@ wrote %d records", type: .info, T.name, recs?.count ?? 0)
       
@@ -259,9 +279,10 @@ public protocol DataModel : Codable {
   static var name : String { get }
   var encodedSystemFields : Data? { get set }
   static func downloadFromAPI()
-  // static func fromICloud(_ : CKDatabase, _ : CKRecordZoneID)
-  // static func uploadToICloud( _ : CKDatabase, _ : CKRecordZoneID)
   static var base : DataCache<Self> { get }
+  
+  static func uploadRelated(_ : CKDatabase, _ : CKRecordZoneID)
+  static func downloadRelated(_ : CKDatabase, _ : CKRecordZoneID)
 }
 
 // the local data is stored on a file and retrieved therefrom.
@@ -310,7 +331,10 @@ extension DataModel {
       os_log("decoding %@ failed: %@", type: .error , record.recordType, error.localizedDescription )
       return nil
     }
-    
+    self.updateSystemFields(record)
+  }
+  
+  mutating public func updateSystemFields(_ record: CKRecord) {
     // Locally store the cloud metadata
     let data = NSMutableData()
     let coder = NSKeyedArchiver.init(forWritingWith: data)

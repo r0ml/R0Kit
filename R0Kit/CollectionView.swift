@@ -70,8 +70,8 @@
       self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
     }
     
-    public func register<T : IdentifiableClass>(_ cl : T.Type) {
-      register(cl as! AnyClass, forCellWithReuseIdentifier: cl.identifier)
+    public func register<T : CollectionViewCell>(_ cl : T.Type) {
+      register(cl as AnyClass, forCellWithReuseIdentifier: cl.identifier)
     }
     
     public func register(_ cl : AnyClass, forCellWithReuseIdentifier idx: String) {
@@ -92,7 +92,7 @@
     }
   }
   
-  open class CollectionViewCell : CollectionViewItem, IdentifiableClass {
+  open class CollectionViewCell : CollectionViewItem {
     open class var identifier : String { return "GenericCollectionViewCell" }
     public var contentView = View()
     
@@ -111,6 +111,11 @@
     open override func loadView() {
       self.view = self.contentView
     }
+    
+    open override func prepareForReuse() {
+      fatalError("you forgot to implement prepareForReuse in \(type(of: self))")
+    }
+    
   }
   
   public class CollectionViewFlowLayout : NSCollectionViewFlowLayout {
@@ -120,14 +125,14 @@
   }
 #endif
 
-public protocol IdentifiableClass {
+/*public protocol IdentifiableClass {
   static var identifier : String {get}
   init()
-}
+}*/
 
 #if os(macOS)
   extension CollectionView {
-    public func makeCell<T : IdentifiableClass>(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> T {
+    public func makeCell<T : CollectionViewCell>(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> T {
       if let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? T {
         fn(item)
         return item

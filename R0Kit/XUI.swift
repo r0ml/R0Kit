@@ -32,17 +32,17 @@ public class ClosX : NSObject {
   // I need to hang on to the objs to keep them for the ObjC machinery.
   // Swift can't tell that they must not be garbage collected
   static var objs = [ClosX]()
-  let fn : (()->Void)
+  let fn : ((AnyObject?)->Void)
   public var selector : Selector { return #selector(ClosX.method(_:)) }
-  public init(_ fn : @escaping ()->Void) { self.fn = fn; super.init(); ClosX.objs.append(self) }
+  public init(_ fn : @escaping (AnyObject?)->Void) { self.fn = fn; super.init(); ClosX.objs.append(self) }
   @objc public func method(_ x : AnyObject?) {
-    fn()
+    fn(x)
   }
 }
 
 extension GestureRecognizer {
-  public convenience init(_ fn : @escaping () -> Void) {
-    let x = ClosX(fn)
+  public convenience init(_ fn : @escaping (GestureRecognizer) -> Void) {
+    let x = ClosX(fn as! (AnyObject?) -> Void)
     self.init(target: x, action: x.selector)
   }
 }
@@ -231,3 +231,46 @@ extension Notification {
     return newImage
   }
 #endif
+
+extension View {
+  public func onPressGesture( _ n : Int, _ t : TimeInterval, _ fn: @escaping(AnyObject?) -> Void) {
+    let x = ClosX(fn)
+    #if os(macOS)
+      let z = NSPressGestureRecognizer(target: x, action: x.selector)
+      #elseif os(iOS)
+      let z = UIPressGestureRecognizer(target: x, action: x.selector)
+      #endif
+    z.minimumPressDuration = t
+    z.buttonMask = n
+    self.addGestureRecognizer(z)
+  }
+}
+#if false
+extension UIView {
+  func onTapGesture(_ fn : @escaping () -> Void) {
+    let x = ClosX(fn)
+    self.addGestureRecognizer( UITapGestureRecognizer(target: x, action: x.selector ) )
+  }
+  func onTapGesture(_ fn : @escaping (UITapGestureRecognizer) -> Void) {
+    let x = Unmanaged.passRetained(XR(gesture: { z in fn(z as! UITapGestureRecognizer) } )).takeUnretainedValue()
+    self.addGestureRecognizer( UITapGestureRecognizer(target: x, action: #selector(XR.goGesture(_:)) ) )
+  }
+  
+  func onSwipeGesture(_ dir : UISwipeGestureRecognizerDirection, _ fn : @escaping(UISwipeGestureRecognizer) -> Void) {
+    let x = Unmanaged.passRetained(XR(gesture: { z in fn(z as! UISwipeGestureRecognizer) } )).takeUnretainedValue()
+    let swipeRight = UISwipeGestureRecognizer(target: x, action: #selector(XR.goGesture(_:)) )
+    swipeRight.direction = dir
+    self.addGestureRecognizer(swipeRight)
+  }
+  
+  func onRotationGesture(_ fn : @escaping(UIRotationGestureRecognizer) -> Void) {
+    let x = Unmanaged.passRetained(XR(gesture: { z in fn(z as! UIRotationGestureRecognizer) } )).takeUnretainedValue()
+    let swipeRot = UIRotationGestureRecognizer(target: x, action: #selector(XR.goGesture(_:)) )
+    self.addGestureRecognizer(swipeRot)
+  }
+  
+}
+
+#endif
+
+

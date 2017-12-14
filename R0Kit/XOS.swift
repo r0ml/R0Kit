@@ -37,6 +37,7 @@ import Foundation
   public typealias UserNotificationCenterDelegate = UNUserNotificationCenterDelegate
   
   public typealias ClickGestureRecognizer = UITapGestureRecognizer
+  public typealias PressGestureRecognizer = UIPressGestureRecognizer
   
 #elseif os(macOS)
   @_exported import AppKit
@@ -69,6 +70,7 @@ import Foundation
   public typealias UserNotificationCenterDelegate = NSUserNotificationCenterDelegate
   
   public typealias ClickGestureRecognizer = NSClickGestureRecognizer 
+  public typealias PressGestureRecognizer = NSPressGestureRecognizer
 
 #endif
 
@@ -201,7 +203,7 @@ import Foundation
   }
   
   extension NSMenuItem {
-    public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping () -> Void) -> NSMenuItem {
+    public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping (AnyObject?) -> Void) -> NSMenuItem {
       let x = ClosX(fn)
       let nmi = NSMenuItem(title: withTitle, action: x.selector, keyEquivalent: keyEquivalent)
       nmi.target = x
