@@ -24,15 +24,15 @@
 
 #if os(iOS)
   
-  open class CollectionViewCell : CollectionViewItem, IdentifiableClass {
+  open class CollectionViewCell : CollectionViewItem {
     open class var identifier : String { return "GenericCollectionViewCell" }
     
-    required public init() {
+    /*convenience public init() {
       super.init(frame: CGRect.zero)
-    }
+    }*/
     
-    override convenience public init(frame: CGRect) {
-      self.init()
+    override required public init(frame: CGRect) {
+      super.init(frame: frame)
     }
     
     required public init?(coder: NSCoder) {
@@ -47,8 +47,8 @@
     public convenience init(empty: Bool) {
       self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout() )
     }
-    public func register<T : IdentifiableClass>(_ cl : T.Type) {
-      register(cl as? AnyClass, forCellWithReuseIdentifier: cl.identifier)
+    public func register<T : CollectionViewCell>(_ cl : T.Type) {
+      register(cl, forCellWithReuseIdentifier: cl.identifier)
     }
   }
   
@@ -59,11 +59,11 @@
   }
   
 #elseif os(macOS)
-  extension CollectionViewItem {
+  /*extension CollectionViewItem {
     convenience public init(frame: CGRect) {
       self.init(nibName: nil, bundle: nil)
     }
-  }
+  }*/
   
   extension CollectionView {
     public convenience init(empty: Bool) {
@@ -96,12 +96,17 @@
     open class var identifier : String { return "GenericCollectionViewCell" }
     public var contentView = View()
     
-    required public init() {
+    required public init(frame: CGRect) {
       super.init(nibName: nil, bundle: nil)
+      self.contentView = View(frame: frame)
+    }
+    
+    convenience public init() {
+      self.init(frame: CGRect.zero) // nibName: nil, bundle: nil)
     }
     
     override convenience public init(nibName: NSNib.Name?, bundle: Bundle?) {
-      self.init()
+      self.init(frame: CGRect.zero)
     }
     
     required public init?(coder: NSCoder) {
@@ -137,7 +142,7 @@
         fn(item)
         return item
       } else {
-        let z = T.init()
+        let z = T.init(frame: CGRect.zero)
         fn(z)
         return z
       }
@@ -146,7 +151,7 @@
   
 #elseif os(iOS)
   extension CollectionView {
-    public func makeCell<T : IdentifiableClass>(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> T {
+    public func makeCell<T : CollectionViewCell>(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> T {
       if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? T {
         fn(cell)
         return cell
@@ -164,7 +169,8 @@
 // which should look like:
 // return collectionView.makeCell(indexPath) { your code here }
 
-open class CollectionViewController : ViewController, CollectionViewDataSource {
+open class CollectionViewController : ViewController, CollectionViewDataSource, CollectionViewDelegate {
+
   open func collectionView(_ collectionView: CollectionView, numberOfItemsInSection section: Int) -> Int {
     return 0
   }

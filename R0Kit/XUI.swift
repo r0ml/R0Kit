@@ -41,8 +41,8 @@ public class ClosX : NSObject {
 }
 
 extension GestureRecognizer {
-  public convenience init(_ fn : @escaping (GestureRecognizer) -> Void) {
-    let x = ClosX(fn as! (AnyObject?) -> Void)
+  public convenience init(_ fn : @escaping ((AnyObject?) -> Void)) {
+    let x = ClosX(fn)
     self.init(target: x, action: x.selector)
   }
 }
@@ -235,13 +235,12 @@ extension Notification {
 extension View {
   public func onPressGesture( _ n : Int, _ t : TimeInterval, _ fn: @escaping(AnyObject?) -> Void) {
     let x = ClosX(fn)
-    #if os(macOS)
-      let z = NSPressGestureRecognizer(target: x, action: x.selector)
-      #elseif os(iOS)
-      let z = UIPressGestureRecognizer(target: x, action: x.selector)
-      #endif
+    let z = PressGestureRecognizer(target: x, action: x.selector)
     z.minimumPressDuration = t
-    z.buttonMask = n
+      #if os(macOS)
+        z.buttonMask = n
+      #endif
+    
     self.addGestureRecognizer(z)
   }
 }

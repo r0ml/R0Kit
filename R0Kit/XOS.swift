@@ -17,6 +17,8 @@ import Foundation
   public typealias BezierPath = UIBezierPath
   public typealias Font = UIFont
   
+  public typealias Event = UIEvent
+  
   public typealias EdgeInsets = UIEdgeInsets
   public typealias ScrollView = UIScrollView
   
@@ -37,7 +39,7 @@ import Foundation
   public typealias UserNotificationCenterDelegate = UNUserNotificationCenterDelegate
   
   public typealias ClickGestureRecognizer = UITapGestureRecognizer
-  public typealias PressGestureRecognizer = UIPressGestureRecognizer
+  public typealias PressGestureRecognizer = UILongPressGestureRecognizer
   
 #elseif os(macOS)
   @_exported import AppKit
@@ -49,6 +51,8 @@ import Foundation
   public typealias View = NSView
   public typealias BezierPath = NSBezierPath
   public typealias Font = NSFont
+  
+  public typealias Event = NSEvent
   
   public typealias EdgeInsets = NSEdgeInsets
   public typealias ScrollView = NSScrollView
@@ -95,7 +99,7 @@ import Foundation
 
   
   extension UIBarButtonItem {
-    public convenience init(title: String, _ fn : @escaping () -> Void) {
+    public convenience init(title: String, _ fn : @escaping (AnyObject?) -> Void) {
       let t = ClosX(fn)
       self.init(title: title, style: .plain, target: t, action: t.selector)
     }
@@ -126,6 +130,10 @@ import Foundation
   public extension UIImage {
     public var pngData: Data? {
       return UIImagePNGRepresentation(self)
+    }
+    
+    public static func from(bundle: Bundle, named: String) -> UIImage? {
+        return Image.init(named: named, in: bundle, compatibleWith: nil)
     }
     
     func scaledTo(_ newSize:CGSize? = nil) -> Image {
@@ -177,7 +185,7 @@ import Foundation
   }
  */
   extension UIControl {
-    public func addTarget( for forevent: UIControlEvents, _ fn: @escaping ()->Void ) -> Void {
+    public func addTarget( for forevent: UIControlEvents, _ fn: @escaping (AnyObject?)->Void ) -> Void {
       let x = ClosX(fn)
       addTarget(x, action: x.selector, for: forevent)
     }
@@ -271,8 +279,12 @@ import Foundation
   }
   
   public extension NSImage {
-    convenience init?(named: String) {
+    public convenience init?(named: String) {
       self.init(named: NSImage.Name(rawValue: named))
+    }
+    
+    public static func from(bundle: Bundle, named: String) -> NSImage? {
+      return bundle.image(forResource: NSImage.Name.init(rawValue: named))
     }
     
     public var pngData: Data? {
