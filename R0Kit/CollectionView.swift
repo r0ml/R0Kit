@@ -27,10 +27,6 @@
   open class CollectionViewCell : CollectionViewItem {
     open class var identifier : String { return "GenericCollectionViewCell" }
     
-    /*convenience public init() {
-      super.init(frame: CGRect.zero)
-    }*/
-    
     override required public init(frame: CGRect) {
       super.init(frame: frame)
     }
@@ -59,12 +55,7 @@
   }
   
 #elseif os(macOS)
-  /*extension CollectionViewItem {
-    convenience public init(frame: CGRect) {
-      self.init(nibName: nil, bundle: nil)
-    }
-  }*/
-  
+
   extension CollectionView {
     public convenience init(empty: Bool) {
       self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
@@ -130,11 +121,6 @@
   }
 #endif
 
-/*public protocol IdentifiableClass {
-  static var identifier : String {get}
-  init()
-}*/
-
 #if os(macOS)
   extension CollectionView {
     public func makeCell<T : CollectionViewCell>(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> T {
@@ -192,12 +178,66 @@ open class CollectionViewController : ViewController, CollectionViewDataSource, 
   }
 }
 
-/*
-extension CollectionViewItem : IdentifiableClass {
-  open static var identifier: String {
-    get {
-    return "GenericCollectionViewItem"
+
+// CollectionViewController
+
+#if os(iOS)
+  open class R0CollectionViewController<T : DataModel, U : CollectionViewCell> : CollectionViewController {
+    
+    public var collectionView = CollectionView(empty: true)
+    
+    public static func addToMenu() {
+    }
+    public required init(with cellType: U.Type) {
+      super.init()
+      collectionView.delegate = self
+      collectionView.dataSource = self
+      collectionView.register(cellType)
+    }
+    public required init() {
+      fatalError("call init(on:, with:)")
+    }
+    
+    public required convenience init?(coder: NSCoder) {
+      fatalError("init?(coder:) not implemented")
+    }
+    
   }
+  
+#endif
+
+#if os(macOS)
+  
+  open class R0CollectionViewController<T : DataModel, U : CollectionViewCell> : CollectionViewController {
+    public var collectionView = CollectionView(empty: true)
+    
+    public required init(with cellType: U.Type) {
+      super.init()
+      collectionView.delegate = self
+      collectionView.dataSource = self
+      
+      // *********************************************************************************
+      // THE DELEGATE, DATASOURCE, AND COLLECTIONVIEWLAYOUT MUST BE SET BEFORE REGISTERING
+      // *********************************************************************************
+      
+      collectionView.register(cellType)
+    }
+    
+    public required init() {
+      fatalError("call init(on:, with:)")
+    }
+    
+    public required convenience init?(coder: NSCoder) {
+      fatalError("init?(coder:) not implemented")
+    }
+    
   }
-}
- */
+  
+  
+  
+#endif
+
+
+
+
+

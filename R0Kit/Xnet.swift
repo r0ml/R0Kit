@@ -9,7 +9,6 @@ public func getImage(sync: Bool = false, _ url : String, f : Optional<(Error?, D
       let r = URLRequest(url: u, timeoutInterval: 30.0)
       
       let task = session.dataTask(with: r) { data, response, error in
-        semaphore.signal()
         var dat : Data
         if let _ = error {
           // print("failed to download (getImage): \(url) \(e.localizedDescription)")

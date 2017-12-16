@@ -246,10 +246,10 @@ extension View {
 }
 #if false
 extension UIView {
-  func onTapGesture(_ fn : @escaping () -> Void) {
+  /*func onTapGesture(_ fn : @escaping () -> Void) {
     let x = ClosX(fn)
     self.addGestureRecognizer( UITapGestureRecognizer(target: x, action: x.selector ) )
-  }
+  }*/
   func onTapGesture(_ fn : @escaping (UITapGestureRecognizer) -> Void) {
     let x = Unmanaged.passRetained(XR(gesture: { z in fn(z as! UITapGestureRecognizer) } )).takeUnretainedValue()
     self.addGestureRecognizer( UITapGestureRecognizer(target: x, action: #selector(XR.goGesture(_:)) ) )

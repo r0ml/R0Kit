@@ -654,9 +654,9 @@ extension View {
       case .heightMinus(let z): cs.append(self.heightAnchor.constraint(equalTo: view.heightAnchor, constant: -z))
 
       case .topPad(let z): cs.append(self.topAnchor.constraint(equalTo: view.topAnchor, constant: z))
-      case .bottomPad(let z): cs.append(self.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: z))
+      case .bottomPad(let z): cs.append(self.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -z))
       case .leadingPad(let z): cs.append(self.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: z))
-      case .trailingPad(let z): cs.append(self.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: z))
+      case .trailingPad(let z): cs.append(self.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -z))
       case .centerXPad(let z): cs.append(self.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: z))
       case .centerYPad(let z): cs.append(self.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: z))
       }
@@ -725,7 +725,5 @@ public var config : URLSessionConfiguration {
   a.timeoutIntervalForRequest = 1.0
   return a
 }
-
-public var semaphore : DispatchSemaphore = DispatchSemaphore(value: 4)
 
 
