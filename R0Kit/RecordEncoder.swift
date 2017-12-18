@@ -58,7 +58,7 @@ public class RecordEncoder : Encoder {
   public init(_ s : String, _ n : String, _ zid : CKRecordZoneID) {
     zoneID = zid
     // record = PCRecord(p: CKRecord.init(recordType: s, recordID: CKRecordID.init(recordName: n, zoneID: zid)), cs: [])
-    record = CKRecord.init(recordType: s, recordID: CKRecordID.init(recordName: n, zoneID: zid))
+    record = CKRecord.init(recordType: s, recordID: CKRecordID.init(recordName: "\(s):\(n)", zoneID: zid))
   }
   
   public init<T : DataModel>(_ m : T, _ zid : CKRecordZoneID) {
@@ -71,7 +71,8 @@ public class RecordEncoder : Encoder {
       pr = CKRecord(coder: coder)!
       coder.finishDecoding()
     } else {
-      pr = CKRecord.init(recordType: type(of: m).name, recordID: CKRecordID.init(recordName: m.getKey(), zoneID: zid ))
+      let rt = type(of: m).name
+      pr = CKRecord.init(recordType: rt, recordID: CKRecordID.init(recordName: "\(rt):\(m.getKey())", zoneID: zid ))
     }
     record = pr // PCRecord(p: pr, cs: [])
   }

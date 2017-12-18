@@ -1,6 +1,6 @@
 //: Playground - noun: a place where people can play
 
-@testable import WPKit
+@testable import R0Kit
 import PlaygroundSupport
 
 let z = [1,2,3,4]
@@ -17,3 +17,6 @@ do {
 }
 PlaygroundPage.current.liveView = z
 */
+
+let urlString = "x-apple.systempreferences:com.apple.preferences.icloud?iCloud"
+NSWorkspace.shared.open(URL(string:urlString)!)

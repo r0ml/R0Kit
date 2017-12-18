@@ -161,8 +161,7 @@ extension Notification {
       })
       print("ok")
     }
-    print("not ok")
-    
+    print("done")
   }
 #endif
 

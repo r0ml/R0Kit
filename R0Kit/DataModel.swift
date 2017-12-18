@@ -35,6 +35,7 @@ public class DataCache<T : DataModel> : NSObject {
       let zz = NSKeyedArchiver.archivedData(withRootObject: recid)
       os_log("root recordId %@", type: .info, recid)
       UserDefaults.standard.set( zz , forKey: "RootRecord")
+      UserDefaults.standard.synchronize()
       rootID = recid
       return
     }
@@ -60,6 +61,10 @@ public class DataCache<T : DataModel> : NSObject {
     }
   }
   
+  public func notify() {
+    NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: [:]) )
+  }
+  
   public func save() {
     // This notification is really just for updating a status line to indicate that a save was attempted.
     Notification.statusUpdate("\(singleton.count) \(T.name) saved")
@@ -79,11 +84,27 @@ public class DataCache<T : DataModel> : NSObject {
   
   // this downloads (and stores locally) the iCloud table by running a query
   public func fromICloud(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
+    var changeTag = UserDefaults.standard.string(forKey: "RecordChangeTag")
+ 
     let query = CKQuery(recordType: T.name, predicate: NSPredicate(value: true))
     repeatCursor(db : dbx, zoneID: zonid, query: query,
-                 recordHandler: { self.cache(T.init(record: $0)) },
-                 blockHandler: {}, completionHandler: { self.pbCopy();
-                  // self.save()
+                 recordHandler: { rec in
+                  if let z = rec.recordChangeTag {
+                    print("record change tag \(z)")
+                    if let ct = changeTag {
+                      if z > ct  { changeTag = z }
+                    } else {
+                      changeTag = z
+                    }
+                    self.cache(T.init(record: rec))
+                  }
+                  },
+                 blockHandler: {
+                  print("writing change token \(changeTag)")
+                  UserDefaults.standard.set(changeTag, forKey: "RecordChangeTag")
+                  UserDefaults.standard.synchronize()
+    }, completionHandler: {
+                  self.pbCopy();
     } )
     
     T.downloadRelated(dbx, zonid)
@@ -346,16 +367,6 @@ extension DataModel {
     self.encodedSystemFields = data as Data
   }
 }
-
-// FIXME: I wrote this for debugging, but given "fromICloud", I don't think it is useful
-/*
- public func dumpData(db : CKDatabase, zoneID: CKRecordZoneID, table : String) {
-  repeatCursor(db: db, zoneID: zoneID, query: CKQuery.init(recordType: table, predicate: NSPredicate(value: true)),
-               recordHandler: { print($0.debugDescription) },
-               blockHandler: { print("block ended")},
-               completionHandler: { print("all done") })
-}
- */
 
 public class LocalAsset : Codable {
   public var url : URL // local file URL

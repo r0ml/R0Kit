@@ -726,4 +726,17 @@ public var config : URLSessionConfiguration {
   return a
 }
 
-
+#if os(iOS)
+extension UIDevice {
+  #if (arch(i386) || arch(x86_64))
+  public static let isSimulator = true
+  #else
+  public static let isSimulator = false
+  #endif
+}
+  
+#elseif os(macOS)
+  public class UIDevice {
+    public static let isSimulator: Bool = false
+  }
+#endif

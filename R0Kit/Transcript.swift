@@ -12,10 +12,8 @@ public class Transcript : View {
   var font : Font?
   
   @objc public override func changeFont(_ x : Any?) {
-    // print("change font")
     let fm = x as? NSFontManager
     // let ff = fm?.selectedFont
-    // print(ff)
     let oldfont = self.font == nil ? Font.systemFont(ofSize: 22) : self.font!
     
     let newfont = fm?.convert(oldfont)
@@ -159,7 +157,6 @@ extension Transcript : TableViewDataSource {
       l.text = lines[row]
       l.font = self.font
       
-      // print("size: ", l.intrinsicContentSize)
       tableView.rowHeight = 2 + l.intrinsicContentSize.height
       
       return l

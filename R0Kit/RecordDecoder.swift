@@ -3,7 +3,7 @@
 //
 
 public class RecordDecoder : Decoder {
-  let record : CKRecord
+  public let record : CKRecord
 
   public var codingPath: [CodingKey] { return [] }
   public var userInfo: [CodingUserInfoKey : Any] { return [:] }
@@ -76,12 +76,6 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
   }
   
   func decode<T>(_ typ: T.Type, forKey key: Key) throws -> T where T : Decodable {
-    // return try decoder.decode(T.self)
-    
-    // if the field I'm being asked to decode is an array of DataModel -- then this is the parent, and those are the children.
-    // so here, the parent will be childless
-    // print(typ)
-    
     if let v = decoder.record[key.stringValue] {
       if typ is CKRecordValuable.Type {
         return (typ as! CKRecordValuable.Type).from(recordValue: v) as! T
