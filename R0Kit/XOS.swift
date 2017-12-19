@@ -202,24 +202,31 @@ import Foundation
     
   }
   
-  open class CollectionReusableView : UICollectionReusableView {
-    open static var identifier : String = "Error: Not Overridden By Subclass"
-    
-    open func setRepresentedObject(_ x : Any?) {
-      fatalError("you forgot to override UICollectionReusableView.setRepresentedObject")
+  open class CollectionReusableView<T> : UICollectionReusableView {
+    private var representedObject : T? // since the view is reusable, this has to be modifiable
+    open func setRepresentedObject(_ x: T?) {
+      representedObject = x
     }
+
+    
+    open class var identifier : String { return String(describing: T.self) }
+    
   }
 
 #elseif os(macOS)
   
   // public typealias IndexPath = NSIndexPath
   
-  open class CollectionReusableView : View {
-    open static var identifier : String = "Error: Not Overridden By Subclass"
+  open class CollectionReusableView<T> : View {
+    open class var identifier : String { return String(describing: T.self) }
     
-    open func setRepresentedObject(_ x : Any?) {
-      fatalError("you forgot to override UICollectionReusableView.setRepresentedObject")
+    public var R0Class : T.Type { return T.self }
+    
+    private var representedObject : T?
+    open func setRepresentedObject(_ x: T?) {
+      representedObject = x
     }
+    
   }
   
   extension NSMenuItem {
@@ -752,3 +759,4 @@ extension UIDevice {
     public static let isSimulator: Bool = false
   }
 #endif
+
