@@ -208,7 +208,19 @@ import Foundation
       representedObject = x
     }
 
+    override public required init(frame: CGRect) {
+      super.init(frame: frame)
+      self.setup()
+    }
     
+    public required init?(coder: NSCoder) {
+      super.init(coder: coder)
+    }
+    
+    open func setup() {
+      fatalError("failed to override CollectionReusableView.setup")
+    }
+
     open class var identifier : String { return String(describing: T.self) }
     
   }
@@ -227,6 +239,18 @@ import Foundation
       representedObject = x
     }
     
+    public override required init(frame: CGRect) {
+      super.init(frame: frame)
+      self.setup()
+    }
+    
+    public required init?(coder: NSCoder) {
+      super.init(coder: coder)
+    }
+    
+    open func setup() {
+      fatalError("failed to override CollectionReusableView.setup")
+    }
   }
   
   extension NSMenuItem {

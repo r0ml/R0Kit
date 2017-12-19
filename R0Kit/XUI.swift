@@ -128,7 +128,7 @@ extension Notification {
       // let aa = UIApplicationOpenSettingsURLString
       // let aa = "app-settings"
      // if let appSettings = URL(string: "App-Prefs:root=General") {
-      if let appSettings = URL(string: "App-Prefs:root=iCloud") {
+      if let appSettings = URL(string: "App-Prefs:root=ACCOUNT_SETTINGS") {
         // "\(aa):root=Safari") {
         UIApplication.shared.open(appSettings, options: [:], completionHandler: nil)
       }
