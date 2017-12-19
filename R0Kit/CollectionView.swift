@@ -22,10 +22,14 @@
   
 #endif
 
+public class GCollectionView<T : CollectionReusableView> : CollectionView {
+  
+}
+
 #if os(iOS)
   
   open class CollectionViewCell : CollectionViewItem {
-    open class var identifier : String { return "GenericCollectionViewCell" }
+  // open class var identifier : String { return "GenericCollectionViewCell" }
     
     override required public init(frame: CGRect) {
       super.init(frame: frame)
@@ -43,7 +47,7 @@
     public convenience init(empty: Bool) {
       self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout() )
     }
-    public func register<T : CollectionViewCell>(_ cl : T.Type) {
+    public func register<T>(_ cl : CollectionItemShim<T>.Type) {
       register(cl, forCellWithReuseIdentifier: cl.identifier)
     }
   }
@@ -61,7 +65,7 @@
       self.init(frame: CGRect.zero, collectionViewLayout: CollectionViewFlowLayout())
     }
     
-    public func register<T : CollectionViewCell>(_ cl : T.Type) {
+    public func register<T>(_ cl : CollectionItemShim<T>.Type) {
       register(cl as AnyClass, forCellWithReuseIdentifier: cl.identifier)
     }
     
@@ -84,7 +88,7 @@
   }
   
   open class CollectionViewCell : CollectionViewItem {
-    open class var identifier : String { return "GenericCollectionViewCell" }
+    // open class var identifier : String { return "GenericCollectionViewCell" }
     public var contentView = View()
     
     required public init(frame: CGRect) {
@@ -123,13 +127,13 @@
 
 #if os(macOS)
   extension CollectionView {
-    public func makeCell<T : CollectionViewCell>(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> T {
-      if let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? T {
-        fn(item)
+    public func makeCell<T>(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> CollectionItemShim<T> {
+      if let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? CollectionItemShim<T> {
+        fn(item.itemView)
         return item
       } else {
-        let z = T.init(frame: CGRect.zero)
-        fn(z)
+        let z = CollectionItemShim<T>.init(frame: CGRect.zero)
+        fn(z.itemView)
         return z
       }
     }
@@ -137,13 +141,13 @@
   
 #elseif os(iOS)
   extension CollectionView {
-    public func makeCell<T : CollectionViewCell>(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> T {
-      if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? T {
-        fn(cell)
+    public func makeCell<T>(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> CollectionItemShim<T> {
+      if let cell = self.dequeueReusableCell(withReuseIdentifier: CollectionItemShim<T>.identifier, for: indexPath) as? CollectionItemShim<T> {
+        fn(cell.itemView)
         return cell
       }
       print("cant get here")
-      return T()
+      return CollectionItemShim<T>()
     }
   }
 #endif
@@ -155,8 +159,11 @@
 // which should look like:
 // return collectionView.makeCell(indexPath) { your code here }
 
-open class CollectionViewController : ViewController, CollectionViewDataSource, CollectionViewDelegate {
+open class CollectionViewController<T : CollectionReusableView> : ViewController, CollectionViewDataSource, CollectionViewDelegate {
 
+  open func numberOfSections(in collectionView: CollectionView) -> Int {
+    return 0
+  }
   open func collectionView(_ collectionView: CollectionView, numberOfItemsInSection section: Int) -> Int {
     return 0
   }
@@ -173,29 +180,44 @@ open class CollectionViewController : ViewController, CollectionViewDataSource, 
   }
   #endif
   
-  open func collectionView( cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> CollectionViewItem {
-    return collectionView.makeCell(indexPath) { (_ : CollectionViewCell) -> Void in }
+  open func collectionView( cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> CollectionItemShim<T> {
+    return (collectionView as! GCollectionView<T>).makeCell(indexPath) { (_ : T) -> Void in }
   }
+  
+  #if os(macOS)
+  open func collectionView(_ collectionView: CollectionView, viewForSupplementaryElementOfKind kind: CollectionView.SupplementaryElementKind, at indexPath: IndexPath) -> View {
+    return View()
+  }
+  #endif
+
+  
 }
 
 
 // CollectionViewController
 
 #if os(iOS)
-  open class R0CollectionViewController<T : DataModel, U : CollectionViewCell> : CollectionViewController {
+  open class R0CollectionViewController<T : DataModel, U : CollectionReusableView> : CollectionViewController<U> {
     
-    public var collectionView = CollectionView(empty: true)
+    public var collectionView = GCollectionView<U>(empty: true)
     
     public static func addToMenu() {
     }
-    public required init(with cellType: U.Type) {
+    
+    open func setup() {
+      fatalError("failed to override R0CollectionViewController.setup")
+    }
+
+    public required init(with cellType: CollectionItemShim<U>.Type) {
       super.init()
       collectionView.delegate = self
       collectionView.dataSource = self
       collectionView.register(cellType)
+      setup()
     }
-    public required init() {
-      fatalError("call init(on:, with:)")
+    
+    public required convenience init() {
+      self.init(with: CollectionItemShim<U>.self)
     }
     
     public required convenience init?(coder: NSCoder) {
@@ -208,10 +230,14 @@ open class CollectionViewController : ViewController, CollectionViewDataSource, 
 
 #if os(macOS)
   
-  open class R0CollectionViewController<T : DataModel, U : CollectionViewCell> : CollectionViewController {
-    public var collectionView = CollectionView(empty: true)
+  open class R0CollectionViewController<T : DataModel, U : CollectionReusableView> : CollectionViewController<U> {
+    public var collectionView = GCollectionView<U>(empty: true)
     
-    public required init(with cellType: U.Type) {
+    open func setup() {
+      fatalError("failed to override R0CollectionViewController.setup")
+    }
+    
+    public required init(with cellType: CollectionItemShim<U>.Type) {
       super.init()
       collectionView.delegate = self
       collectionView.dataSource = self
@@ -221,10 +247,11 @@ open class CollectionViewController : ViewController, CollectionViewDataSource, 
       // *********************************************************************************
       
       collectionView.register(cellType)
+      setup()
     }
     
-    public required init() {
-      fatalError("call init(on:, with:)")
+    public required convenience init() {
+      self.init(with: CollectionItemShim<U>.self) // ("call init(on:, with:)")
     }
     
     public required convenience init?(coder: NSCoder) {
@@ -237,7 +264,35 @@ open class CollectionViewController : ViewController, CollectionViewDataSource, 
   
 #endif
 
-
-
+open class CollectionItemShim<T : CollectionReusableView> : CollectionViewCell {
+  open class var identifier : String { return T.identifier }
+  
+  var itemView: T
+  
+  #if os(macOS)
+  var _representedObject : Any?
+  open override var representedObject : Any? {
+    get { return _representedObject }
+    set { _representedObject = newValue; itemView.setRepresentedObject(newValue) }
+  }
+  #elseif os(iOS)
+  #endif
+  
+  
+  public required init(frame: CGRect) {
+    itemView = T()
+    super.init(frame: frame)
+    // ***** DON'T FORGET THIS, OR NOTHING WILL SHOW UP ***
+    itemView.addInto(self.contentView)
+  }
+  
+  public required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+  
+  open override func prepareForReuse() {
+    itemView.prepareForReuse()
+  }
+}
 
 

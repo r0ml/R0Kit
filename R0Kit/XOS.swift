@@ -202,12 +202,24 @@ import Foundation
     
   }
   
-  
+  open class CollectionReusableView : UICollectionReusableView {
+    open static var identifier : String = "Error: Not Overridden By Subclass"
+    
+    open func setRepresentedObject(_ x : Any?) {
+      fatalError("you forgot to override UICollectionReusableView.setRepresentedObject")
+    }
+  }
+
 #elseif os(macOS)
   
   // public typealias IndexPath = NSIndexPath
   
-  open class UICollectionReusableView : View {
+  open class CollectionReusableView : View {
+    open static var identifier : String = "Error: Not Overridden By Subclass"
+    
+    open func setRepresentedObject(_ x : Any?) {
+      fatalError("you forgot to override UICollectionReusableView.setRepresentedObject")
+    }
   }
   
   extension NSMenuItem {
