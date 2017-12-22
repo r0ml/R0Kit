@@ -117,6 +117,13 @@
   
   public class CollectionViewFlowLayout : NSCollectionViewFlowLayout {
     public override func shouldInvalidateLayout(forBoundsChange newBounds: NSRect) -> Bool {
+      // ***************************************************
+      // Although the documentation just says "return true"
+      // one gets a lot of log spewage if the new size is smaller than the old size
+      // These two lines fix that problem
+      // ***************************************************
+      self.collectionView?.setFrameSize(newBounds.size)
+      self.collectionView?.invalidateLayout()
       return true
     }
   }
@@ -196,14 +203,34 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     print("forgot to override CollectionViewController.didSelectItemAt")
   }
   
+  open func collectionView(_ collectionView: CollectionView, didDeselectItemsAt indexPaths: Set<IndexPath>) {
+    print("forgot to override CollectionViewController.didDeselectItemsAt")
+  }
   
+  open func collectionView(_ collectionView : CollectionView, didDeselectItemAt indexPath: IndexPath) {
+    print("forgot to override CollectionViewController.didDeselectItemAt")
+  }
+
+  open func collectionView(_ collectionView: CollectionView, shouldSelectItemsAt indexPaths: Set<IndexPath>) {
+    print("forgot to override CollectionViewController.shouldSelectItemsAt")
+  }
+  
+  open func collectionView(_ collectionView : CollectionView, shouldSelectItemAt indexPath: IndexPath) {
+    print("forgot to override CollectionViewController.shouldSelectItemAt")
+  }
+
+  open func collectionView(_ collectionView: CollectionView, shouldDeselectItemsAt indexPaths: Set<IndexPath>) {
+    print("forgot to override CollectionViewController.shouldDeselectItemsAt")
+  }
+  
+  open func collectionView(_ collectionView : CollectionView, shouldDeselectItemAt indexPath: IndexPath) {
+    print("forgot to override CollectionViewController.shouldDeselectItemAt")
+  }
   
   open func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
     fatalError("forgot to override CollectionViewController.sizeForItemAt")
   }
 
-  
-  
 }
 
 

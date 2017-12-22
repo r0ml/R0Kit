@@ -26,6 +26,8 @@ public func getImage(sync: Bool = false, _ url : String, f : Optional<(Error?, D
     if let f = f { f( nil, Data() ) }
     lsem.signal()
   }
-  if sync { lsem.wait() }
+  
+  // FIXME:  There should be a timeout here?
+  if sync { lsem.wait( timeout: .now() + 30 ) }
 }
 

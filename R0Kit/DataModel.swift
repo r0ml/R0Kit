@@ -50,7 +50,7 @@ public class DataCache<T : DataModel> : NSObject {
   public var singleton : [String : T] { get { return _singleton}
     set {
       _singleton = newValue
-      
+      notify()
       if !queued {
         queued = true
         myQ.asyncAfter(deadline: .now() + 1.0) {

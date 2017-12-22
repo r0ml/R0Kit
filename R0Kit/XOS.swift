@@ -662,6 +662,15 @@ public class HStack : View {
   public required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
 
+extension EdgeInsets {
+  public init(all: CGFloat) {
+    self.init(top: all, left: all, bottom: all, right: all)
+  }
+  public init(horiz: CGFloat, vert: CGFloat) {
+    self.init(top: vert, left: horiz, bottom: vert, right: horiz)
+  }
+}
+
 extension View {
   public func guide(insetBy: EdgeInsets) -> LayoutGuide {
     let z = LayoutGuide()
