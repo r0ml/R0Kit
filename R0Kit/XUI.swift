@@ -165,9 +165,6 @@ extension Notification {
   }
 #endif
 
-
-
-
 #if os(macOS)
   extension NSBezierPath {
     public func addArc(withCenter: CGPoint, radius: CGFloat, startAngle: CGFloat, endAngle: CGFloat, clockwise: Bool = false) {
@@ -243,6 +240,8 @@ extension View {
     self.addGestureRecognizer(z)
   }
 }
+
+
 #if false
 extension UIView {
   /*func onTapGesture(_ fn : @escaping () -> Void) {
@@ -292,7 +291,6 @@ public enum Stackable {
   case pad(CGFloat)
   case view(View)
 }
-
 
 public class Stacker {
   let view : View

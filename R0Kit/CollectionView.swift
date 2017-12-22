@@ -194,7 +194,6 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   }
   #endif
 
-  
   open func collectionView(_ collectionView: CollectionView, didSelectItemsAt indexPaths: Set<IndexPath>) {
       print("forgot to override CollectionViewController.didSelectItemsAt")
     }
@@ -230,12 +229,9 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   open func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
     fatalError("forgot to override CollectionViewController.sizeForItemAt")
   }
-
 }
 
-
 // CollectionViewController
-
 #if os(iOS)
   open class R0CollectionViewController<VV, UU : CollectionReusableView<VV>> : CollectionViewController<VV, UU> {
     
@@ -265,9 +261,7 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     public required convenience init?(coder: NSCoder) {
       fatalError("init?(coder:) not implemented")
     }
-    
   }
-  
 #endif
 
 #if os(macOS)
@@ -311,11 +305,7 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
       lastBounds = z
       collectionView.invalidateLayout()
     }
-
   }
-  
-  
-  
 #endif
 
 open class CollectionItemShim<UU, TT : CollectionReusableView<UU> > : CollectionViewCell {

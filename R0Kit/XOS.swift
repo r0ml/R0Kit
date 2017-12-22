@@ -466,15 +466,9 @@ import Foundation
 
   }
   
-  /*   extension View {
-   var layoutMarginsGuide : NSLayoutGuide {
-   get {
-   return self.layoutGuides.first ?? NSLayoutGuide() }
-   }
-   } */
-  
+  // FIXME: This only exists for Transcript.
+  // Change Transcript to use CollectionView -- then this won't be needed
   extension TableView {
-    
     // this presumes that there is no "section" in the table
     public func deleteRows(at: [IndexPath], with: TableView.AnimationOptions) {
       var z = IndexSet()
@@ -609,7 +603,7 @@ extension Data {
   }
 }
 
-
+/*
 public class VStack : View {
   public convenience init(_ vs : [View], space sep: CGFloat ) {
     self.init(frame: .zero)
@@ -637,7 +631,8 @@ public class VStack : View {
     fatalError("init(coder:) has not been implemented")
   }
 }
-
+*/
+/*
 public class HStack : View {
   public convenience init(_ vs : [View], space sep: CGFloat ) {
     self.init(frame: .zero)
@@ -661,6 +656,7 @@ public class HStack : View {
   override init(frame: CGRect) { super.init(frame: frame) }
   public required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 }
+ */
 
 extension EdgeInsets {
   public init(all: CGFloat) {
@@ -679,7 +675,8 @@ extension View {
     #if os(macOS)
       let rtol = self.userInterfaceLayoutDirection == NSUserInterfaceLayoutDirection.rightToLeft
     #elseif os(iOS)
-      let rtol = UIView.userInterfaceLayoutDirectionForSemanticContentAttribute(self.semanticContentAttribute) == UIUserInterfaceLayoutDirectionRightToLeft
+      let rtol = self.effectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.rightToLeft
+      // let rtol = UIView.userInterfaceLayoutDirection(for: self.semanticContentAttribute) == UIUserInterfaceLayoutDirection.rightToLeft
     #endif
 
     (z.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -insetBy.bottom)).isActive=true
@@ -696,9 +693,6 @@ extension View {
     z.fitInto(view.guide(insetBy: EdgeInsets() ), with: with)
   }
   
-  
-  
-  
   public func fitInto(_ view: LayoutGuide, with: [Constraint] = [.top, .bottom, .leading, .trailing]) {
     var cs = Array<NSLayoutConstraint>()
     self.translatesAutoresizingMaskIntoConstraints = false
@@ -712,18 +706,6 @@ extension View {
       case .height: cs.append(self.heightAnchor.constraint(equalTo: view.heightAnchor))
       case .centerX: cs.append(self.centerXAnchor.constraint(equalTo: view.centerXAnchor))
       case .centerY: cs.append(self.centerYAnchor.constraint(equalTo: view.centerYAnchor))
-        
-        /*   case .topMargin: cs.append(self.topAnchor.constraint(equalTo:
-         view.layoutMarginsGuide.topAnchor))
-         case .bottomMargin: cs.append(self.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor))
-         case .leadingMargin: cs.append(self.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor))
-         case .trailingMargin: cs.append(self.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor))
-         case .widthWithMargins: cs.append(self.widthAnchor.constraint(equalTo: view.layoutMarginsGuide.widthAnchor))
-         case .heightWithMargins: cs.append(self.heightAnchor.constraint(equalTo: view.layoutMarginsGuide.heightAnchor))
-         case .centerXWithMargins: cs.append(self.centerXAnchor.constraint(equalTo: view.layoutMarginsGuide.centerXAnchor))
-         case .centerYWithMargins: cs.append(self.centerYAnchor.constraint(equalTo: view.layoutMarginsGuide.centerYAnchor))
-         */
-        
       case .widthMinus(let z): cs.append(self.widthAnchor.constraint(equalTo: view.widthAnchor,  constant: -z))
       case .heightMinus(let z): cs.append(self.heightAnchor.constraint(equalTo: view.heightAnchor, constant: -z))
 
@@ -737,55 +719,10 @@ extension View {
     }
     NSLayoutConstraint.activate( cs )
   }
-  
-  /*
-  public func fitIntoX(_ view: NSLayoutGuide, with: [Constraint] = [.top, .bottom, .leading, .trailing]) {
-    var cs = Array<NSLayoutConstraint>()
-    self.translatesAutoresizingMaskIntoConstraints = false
-    with.forEach {
-      switch $0 {
-      case .top: cs.append(self.topAnchor.constraint(equalTo: view.topAnchor))
-      case .bottom: cs.append(self.bottomAnchor.constraint(equalTo: view.bottomAnchor))
-      case .leading: cs.append(self.leadingAnchor.constraint(equalTo: view.leadingAnchor))
-      case .trailing: cs.append(self.trailingAnchor.constraint(equalTo: view.trailingAnchor))
-      case .width: cs.append(self.widthAnchor.constraint(equalTo: view.widthAnchor))
-      case .height: cs.append(self.heightAnchor.constraint(equalTo: view.heightAnchor))
-      case .centerX: cs.append(self.centerXAnchor.constraint(equalTo: view.centerXAnchor))
-      case .centerY: cs.append(self.centerYAnchor.constraint(equalTo: view.centerYAnchor))
-        
-        /*   case .topMargin: cs.append(self.topAnchor.constraint(equalTo:
-         view.layoutMarginsGuide.topAnchor))
-         case .bottomMargin: cs.append(self.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor))
-         case .leadingMargin: cs.append(self.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor))
-         case .trailingMargin: cs.append(self.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor))
-         case .widthWithMargins: cs.append(self.widthAnchor.constraint(equalTo: view.layoutMarginsGuide.widthAnchor))
-         case .heightWithMargins: cs.append(self.heightAnchor.constraint(equalTo: view.layoutMarginsGuide.heightAnchor))
-         case .centerXWithMargins: cs.append(self.centerXAnchor.constraint(equalTo: view.layoutMarginsGuide.centerXAnchor))
-         case .centerYWithMargins: cs.append(self.centerYAnchor.constraint(equalTo: view.layoutMarginsGuide.centerYAnchor))
-         */
-        
-      case .widthMinus(let z): cs.append(self.widthAnchor.constraint(equalTo: view.widthAnchor,  constant: -z))
-      case .heightMinus(let z): cs.append(self.heightAnchor.constraint(equalTo: view.heightAnchor, constant: -z))
-        
-      case .topPad(let z): cs.append(self.topAnchor.constraint(equalTo: view.topAnchor, constant: z))
-      case .bottomPad(let z): cs.append(self.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -z))
-      case .leadingPad(let z): cs.append(self.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: z))
-      case .trailingPad(let z): cs.append(self.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -z))
-      case .centerXPad(let z): cs.append(self.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: z))
-      case .centerYPad(let z): cs.append(self.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: z))
-      }
-    }
-    NSLayoutConstraint.activate( cs )
-  }
-  
-  */
-  
-  
-  
 }
 
 extension View {
-  @discardableResult public func withPadding(top: CGFloat = 0, left: CGFloat = 0, bottom: CGFloat = 0, right: CGFloat = 0) -> View {
+/*  @discardableResult public func withPadding(top: CGFloat = 0, left: CGFloat = 0, bottom: CGFloat = 0, right: CGFloat = 0) -> View {
     let v = View()
     // v.accessibilityIdentifier = "padding"
     // v.layoutMargins = ins
@@ -800,6 +737,7 @@ extension View {
     //    self.addInto(v)
     return v
   }
+ */
 }
 
 
