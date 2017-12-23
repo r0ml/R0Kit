@@ -122,9 +122,13 @@
       // one gets a lot of log spewage if the new size is smaller than the old size
       // These two lines fix that problem
       // ***************************************************
-      self.collectionView?.setFrameSize(newBounds.size)
-      self.collectionView?.invalidateLayout()
-      return true
+      
+      // self.collectionView?.setFrameSize(newBounds.size)
+      // self.collectionView?.invalidateLayout()
+      
+      // return true
+      
+      return !(self.collectionView?.enclosingScrollView?.bounds.size == newBounds.size)
     }
   }
 #endif
