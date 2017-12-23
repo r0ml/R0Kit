@@ -10,63 +10,58 @@ public class Icon {
   static let fillColor: Color = Color.green.withAlphaComponent(0.3)
   
   public static func downArrow(_ size: CGSize) {
-    drawArrow(CGRect(origin: CGPoint.zero, size: size), false, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
+    drawArrow(size, true, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
   }
   
   public static func upArrow(_ size: CGSize) {
-    drawArrow(CGRect(origin: CGPoint.zero, size: size), true, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
+    drawArrow(size, false, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
   }
   
   public static func cloud(_ size : CGSize) {
     let fi = CGFloat((sqrt(5) + 1)/2)
     let h = size.height / fi
     let o = (size.height - h) / 2
-    
-    let r = CGRect(origin: CGPoint(x: 0, y: o), size: CGSize(width: size.width, height: h))
-    drawCloud(r, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor )
+    UIGraphicsGetCurrentContext()?.translateBy(x: 0, y: o)
+    drawCloud(CGSize(width: size.width, height: h), lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor )
   }
   
   public static func downloadCloud(_ size: CGSize) {
     let fi = CGFloat((sqrt(5) + 1) / 2)
     let h = size.height / fi
-    let r = CGRect(origin: CGPoint(x: 0, y: size.height - h), size: CGSize(width: size.width,
-                                                                           height: h))
-    drawCloud(r, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
+    drawCloud(CGSize(width: size.width, height: h), lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
     let n = size.width / 2
-    let r2 = CGRect(origin: CGPoint(x: n / 2, y: 0), size: CGSize(width: n, height: h))
-    drawArrow(r2, false, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
+    UIGraphicsGetCurrentContext()?.translateBy(x: n / 2, y: h/2)
+    drawArrow(CGSize(width: n, height: h), true, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
   }
   
   public static func uploadCloud(_ size : CGSize) {
     let fi = CGFloat((sqrt(5) + 1) / 2)
     let h = size.height / fi
-    let r = CGRect(origin: CGPoint(x: 0, y: size.height - h), size: CGSize(width: size.width, height: h))
-    drawCloud(r, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
+    drawCloud(CGSize(width: size.width, height: h), lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
     let n = size.width / 2
-    let r2 = CGRect(origin: CGPoint(x: n / 2, y: h / 4), size: CGSize(width: n, height: h))
-    drawArrow(r2, true, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
+    UIGraphicsGetCurrentContext()?.translateBy(x: n/2, y: h/2)
+    drawArrow(CGSize(width: n, height: h), false, lineWidth: lineWidth, lineColor: lineColor, fillColor: fillColor)
   }
   
-  public static func drawArrow( _ rect : CGRect, _ isFlipped: Bool, lineWidth: CGFloat, lineColor : Color, fillColor : Color) {
+  public static func drawArrow( _ size : CGSize, _ isFlipped: Bool, lineWidth: CGFloat, lineColor : Color, fillColor : Color) {
     let path = BezierPath()
-    let context = UIGraphicsGetCurrentContext()
-    context?.saveGState()
-    
-    context?.translateBy(x: rect.origin.x, y: rect.origin.y + (isFlipped ? rect.height : 0) )
-    context?.scaleBy(x: 1, y : isFlipped ? -1 : 1)
-    path.lineWidth = lineWidth
+    let w = size.width
+    let h = size.height
+    let lw = lineWidth
+    path.lineWidth = lw
     path.lineCapStyle = .round // NSBezierPath.LineCapStyle.roundLineCapStyle
-    let aw = rect.width * 0.15
+    let aw = w * 0.15
     let hw = aw * 2.6
-    let hh = rect.height * 0.35
-    path.move(to: CGPoint(x: rect.width / 2 - aw, y: rect.height-1))
-    path.addLine(to: CGPoint(x: rect.width / 2 - aw, y: hh))
-    path.addLine(to: CGPoint(x: rect.width / 2 - hw, y: hh))
-    path.addLine(to: CGPoint(x: rect.width / 2, y: 1 ))
-    path.addLine(to: CGPoint(x: rect.width / 2 + hw, y: hh ))
-    path.addLine(to: CGPoint(x: rect.width / 2 + aw, y: hh))
-    path.addLine(to: CGPoint(x:rect.width / 2 + aw, y: rect.height-1))
-    path.addLine(to: CGPoint(x: rect.width / 2 - aw, y : rect.height-1))
+    let hh = h * 0.35
+    let point = isFlipped ? { x, y in CGPoint(x: x, y: h - y) } : { x, y in CGPoint(x: x, y: y) }
+    path.move(to: point(w / 2 - aw, h-lw))
+    path.addLine(to: point( w / 2 - aw, hh))
+    path.addLine(to: point( w / 2 - hw, hh))
+    path.addLine(to: point( w / 2, lw ))
+    path.addLine(to: point( w / 2 + hw, hh ))
+    path.addLine(to: point( w / 2 + aw, hh))
+    path.addLine(to: point( w / 2 + aw, h-lw))
+    path.addLine(to: point( w / 2 - aw, h-lw))
     
     // FIXME: extend NSBezierPath to handle "line"
     // path.addLine(to: CGPoint(x: iconFrame.maxX, y: iconFrame.maxY))
@@ -74,50 +69,75 @@ public class Icon {
     path.stroke()
     fillColor.setFill()
     path.fill()
-    
-    context?.restoreGState()
   }
   
-  public static func drawCloud(_ rect : CGRect, lineWidth: CGFloat, lineColor: Color, fillColor: Color) {
-    let context = UIGraphicsGetCurrentContext()
-    context?.saveGState()
-    context?.translateBy(x: rect.origin.x, y: rect.origin.y)
-    
+  public static func drawCloud(_ size : CGSize, lineWidth: CGFloat, lineColor: Color, fillColor: Color) {
+      let lw = lineWidth
+      let fi = CGFloat((sqrt(5) + 1) / 2)
+      let rw = size.width
+      let scl = floor(CGFloat(rw - lw) / fi )
+      let h = size.height
+      
     let path = BezierPath()
     path.lineWidth = lineWidth
     path.lineCapStyle = .round //  BezierPath.LineCapStyle.roundLineCapStyle
     path.lineJoinStyle = .bevel   //   .bevelLineJoinStyle
     
-    let lw = lineWidth
+    let pt = CGPoint(x: (lw/2)+(scl/(2*fi)), y: h-(lw/2) )
+    let x5 = (lw/2) + scl / (2 * fi)
+    let pt5 = CGPoint(x: x5, y: h - x5)
+    // path.appendArc(withCenter: pt5, radius: scl / (2 * fi), startAngle: 90, endAngle: 270)
+    path.addArc(withCenter: pt5, radius: scl / ( 2 * fi), startAngle: 270, endAngle: 90, clockwise: true)
     
-    let fi = CGFloat((sqrt(5) + 1) / 2)
-    let scl = floor(CGFloat(rect.width - lw) / fi )
     
-    let pt = CGPoint(x: (lw/2)+(scl/(2*fi)), y: (lw/2) )
+    let x6 = (lw/2)+(scl / (2*fi) ) + (scl/(2*fi*fi))
+    let pt6 = CGPoint(x: x6, y : h - ((lw/2) + (scl / fi)))
+    // path.appendArc(withCenter: pt6, radius: scl / (2 * fi * fi), startAngle: 49, endAngle: 180)
+    path.addArc(withCenter: pt6, radius: scl / (2 * fi * fi), startAngle: -49, endAngle: 180, clockwise: true)
     
+    
+    let pt4 = CGPoint(x: (lw/2) + scl, y: h - ((lw/2) + scl * (1-(fi*0.25))) )
+    // path.appendArc(withCenter: pt4, radius: scl * (fi * 0.25), startAngle: -13.4, endAngle: 142)
+    path.addArc(withCenter: pt4, radius: scl * (fi * 0.25), startAngle: 13.4, endAngle: -142, clockwise: true)
+    
+    
+    let pt2 = CGPoint( x: (scl * (fi-0.25)) - (lw/2), y: h - lw/2)
+    let pt3 = pt2 + CGPoint(x: 0, y: -scl * 0.25 )
+    // path.appendArc(from: pt2, to: pt3, radius: CGFloat(scl) )
+    // path.appendArc(withCenter: pt3, radius: scl * 0.25, startAngle: -90, endAngle: 83.8)
+    path.addArc(withCenter: pt3, radius: scl * 0.25, startAngle: 90, endAngle: -73, clockwise: true)
+    
+    
+    
+    path.addLine(to: pt)
+    
+    
+    
+/*
     path.move(to: pt)
-    let pt2 = CGPoint( x: (scl * (fi-0.25)) - (lw/2), y: lw/2)
+    let pt2 = CGPoint( x: (scl * (fi-0.25)) - (lw/2), y: h - lw/2)
     // path.line(to: pt2)
     path.addLine(to: pt2)
     
-    let pt3 = pt2 + CGPoint(x: 0, y: scl * 0.25 )
+    let pt3 = pt2 + CGPoint(x: 0, y: h - scl * 0.25 )
     // path.appendArc(from: pt2, to: pt3, radius: CGFloat(scl) )
     // path.appendArc(withCenter: pt3, radius: scl * 0.25, startAngle: -90, endAngle: 83.8)
-    path.addArc(withCenter: pt3, radius: scl * 0.25, startAngle: -90, endAngle: 83.8, clockwise: false)
+    path.addArc(withCenter: pt3, radius: scl * 0.25, startAngle: -83.8, endAngle: 90, clockwise: false)
     
-    let pt4 = CGPoint(x: (lw/2) + scl, y: (lw/2) + scl * (1-(fi*0.25)) )
+    let pt4 = CGPoint(x: (lw/2) + scl, y: h - ((lw/2) + scl * (1-(fi*0.25))) )
     // path.appendArc(withCenter: pt4, radius: scl * (fi * 0.25), startAngle: -13.4, endAngle: 142)
     path.addArc(withCenter: pt4, radius: scl * (fi * 0.25), startAngle: -13.4, endAngle: 142, clockwise: false)
     
     let x6 = (lw/2)+(scl / (2*fi) ) + (scl/(2*fi*fi))
-    let pt6 = CGPoint(x: x6, y : (lw/2) + (scl / fi))
+    let pt6 = CGPoint(x: x6, y : h - ((lw/2) + (scl / fi)))
     // path.appendArc(withCenter: pt6, radius: scl / (2 * fi * fi), startAngle: 49, endAngle: 180)
     path.addArc(withCenter: pt6, radius: scl / (2 * fi * fi), startAngle: 49, endAngle: 180, clockwise: false)
     
     let x5 = (lw/2) + scl / (2 * fi)
-    let pt5 = CGPoint(x: x5, y: x5)
+    let pt5 = CGPoint(x: x5, y: h - x5)
     // path.appendArc(withCenter: pt5, radius: scl / (2 * fi), startAngle: 90, endAngle: 270)
-    path.addArc(withCenter: pt5, radius: scl / ( 2 * fi), startAngle: 90, endAngle: 270, clockwise: false)
+    path.addArc(withCenter: pt5, radius: scl / ( 2 * fi), startAngle: -90, endAngle: 90, clockwise: false)
+    */
     
     // FIXME: extend NSBezierPath to handle "line"
     // path.addLine(to: CGPoint(x: iconFrame.maxX, y: iconFrame.maxY))
@@ -127,17 +147,12 @@ public class Icon {
     fillColor.setFill()
     path.fill()
     
-    context?.restoreGState()
   }
   
   public static func drawThumbsUp_1(_ size : CGSize) {
-    let context = UIGraphicsGetCurrentContext()!
-    
-    //// Resize to Target Frame
-    context.saveGState()
 
     // context.translateBy(x: resizedFrame.minX, y: resizedFrame.minY)
-    context.scaleBy(x: size.width / 100, y: size.height / 100)
+    UIGraphicsGetCurrentContext()?.scaleBy(x: size.width / 100, y: size.height / 100)
     
     
     //// Color Declarations
@@ -239,18 +254,12 @@ public class Icon {
     fillColor4.setFill()
     bezier2Path.fill()
     
-    context.restoreGState()
   }
   
   public static func drawThumbsUp_2(_ size : CGSize) {
-    let context = UIGraphicsGetCurrentContext()!
-    
-    //// Resize to Target Frame
-    context.saveGState()
-
     // context.translateBy(x: resizedFrame.minX, y: resizedFrame.minY)
     // context.translateBy(x: size.width, y: size.height)
-    context.scaleBy(x: size.width / 100, y: size.height / 100)
+    UIGraphicsGetCurrentContext()?.scaleBy(x: size.width / 100, y: size.height / 100)
     
     // context.translateBy(x: size.width, y: size.height)
     // context.scaleBy(x: -1, y: -1)
@@ -435,17 +444,11 @@ public class Icon {
     bezier9Path.miterLimit = 4
     bezier9Path.stroke()
     
-    context.restoreGState()
-
   }
 
   public static func drawThumbsUp_3(_ size : CGSize) {
-    let context = UIGraphicsGetCurrentContext()!
-    
-    //// Resize to Target Frame
-    context.saveGState()
-    // context.translateBy(x: resizedFrame.minX, y: resizedFrame.minY)
-    context.scaleBy(x: size.width / 100, y: size.height / 100)
+    let context = UIGraphicsGetCurrentContext()
+    context?.scaleBy(x: size.width / 100, y: size.height / 100)
     
     
     //// Color Declarations
@@ -596,9 +599,6 @@ public class Icon {
     bezier7Path.lineCapStyle = .round
     bezier7Path.lineJoinStyle = .round
     bezier7Path.stroke()
-    
-    context.restoreGState()
-
   }
   
   public static func draw_swift(_ size : CGSize) {
@@ -646,11 +646,7 @@ public class Icon {
   public static func draw_refresh(_ size : CGSize) {
     let context = UIGraphicsGetCurrentContext()!
     
-    //// Resize to Target Frame
-    context.saveGState()
-    // context.translateBy(x: resizedFrame.minX, y: resizedFrame.minY)
     context.scaleBy(x: size.width / 100, y: size.height / 100)
-    
 
     //// Color Declarations
     let fillColor = Color(red: 0.000, green: 0.000, blue: 0.000, alpha: 1.000)
@@ -690,18 +686,14 @@ public class Icon {
     bezier2Path.close()
     fillColor.setFill()
     bezier2Path.fill()
-    
-    context.restoreGState()
-
   }
   
   public static func draw_reset(_ size : CGSize) {
     let context = UIGraphicsGetCurrentContext()!
     
-    //// Resize to Target Frame
-    context.saveGState()
+    context.scaleBy(x: size.width / 30, y: size.height / 30)
 
-  //// Color Declarations
+    //// Color Declarations
   let fillColor = Color(red: 0.000, green: 0.000, blue: 0.000, alpha: 1.000)
   let strokeColor = Color(red: 0.000, green: 0.000, blue: 0.000, alpha: 1.000)
   
@@ -748,8 +740,6 @@ public class Icon {
   bezier4Path.close()
   fillColor.setFill()
   bezier4Path.fill()
-
-    context.restoreGState()
 
   }
 }

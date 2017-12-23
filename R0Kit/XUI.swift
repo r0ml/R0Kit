@@ -188,16 +188,27 @@ extension Notification {
 }
   
   extension NSBezierPath.LineCapStyle {
-    static let round = roundLineCapStyle
+    public static let round = roundLineCapStyle
   }
   
   extension NSBezierPath.LineJoinStyle {
-    static let bevel = bevelLineJoinStyle
-    static let round = roundLineJoinStyle
+    public static let bevel = bevelLineJoinStyle
+    public static let round = roundLineJoinStyle
   }
   
   public func UIGraphicsGetCurrentContext() -> CGContext? {
     return NSGraphicsContext.current?.cgContext
+/*      context.saveGState()
+      
+      let tne = context.convertToUserSpace(CGSize(width: 1, height: 1))
+      context.scaleBy(x: tne.width, y : tne.height )
+      let tnx = context.convertToUserSpace(CGPoint(x: 0, y: 0))
+      context.translateBy(x: tnx.x, y: tnx.y )
+      return context
+    } else {
+      return nil
+    }
+ */
   }
   
   public func makeImage(_ sz : CGSize, _ fn : @escaping (CGSize)->Void) -> Image? {
@@ -205,6 +216,15 @@ extension Notification {
       if let gc = NSGraphicsContext.init(bitmapImageRep: bitmapRep) {
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = gc
+         let context = gc.cgContext
+        let tne = context.convertToUserSpace(CGSize(width: 1, height: 1))
+        context.scaleBy(x: tne.width, y : tne.height )
+        let tnx = context.convertToUserSpace(CGPoint(x: 0, y: 0))
+        context.translateBy(x: tnx.x, y: tnx.y )
+
+        // context.scaleBy(x: rect.size.width / CGFloat(context.width), y: rect.size.height / CGFloat(context.height) )
+        // let bb = gc.cgContext.boundingBoxOfClipPath
+        
         fn(sz)
         NSGraphicsContext.restoreGraphicsState()
         
@@ -219,8 +239,9 @@ extension Notification {
 #endif
 
 #if os(iOS)
+
   public func makeImage(_ sz: CGSize, _ fn: @escaping (CGSize) -> Void) -> Image? {
-    UIGraphicsBeginImageContextWithOptions(sz, false, 1.0)
+    UIGraphicsBeginImageContextWithOptions(sz, false, 2.0)
     fn(sz)
     let newImage = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()

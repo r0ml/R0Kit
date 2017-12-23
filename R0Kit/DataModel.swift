@@ -90,7 +90,7 @@ public class DataCache<T : DataModel> : NSObject {
     repeatCursor(db : dbx, zoneID: zonid, query: query,
                  recordHandler: { rec in
                   if let z = rec.recordChangeTag {
-                    print("record change tag \(z)")
+                    // print("record change tag \(z)")
                     if let ct = changeTag {
                       if z > ct  { changeTag = z }
                     } else {
@@ -100,7 +100,7 @@ public class DataCache<T : DataModel> : NSObject {
                   }
                   },
                  blockHandler: {
-                  print("writing change token \(changeTag)")
+                  // print("writing change token \(changeTag)")
                   UserDefaults.standard.set(changeTag, forKey: "RecordChangeTag")
                   UserDefaults.standard.synchronize()
     }, completionHandler: {

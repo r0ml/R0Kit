@@ -57,7 +57,7 @@ public func findZone(_ db : CKDatabase, _ nam : String) -> CKRecordZoneID? {
 }
 
 public func checkiCloudLogin(_ fn : @escaping () -> Void) {
-  var isLoggedIn = false
+  // var isLoggedIn = false
 
   // let testingNotLoggedIn = false
   CKContainer.default().accountStatus { accountStatus, error in
@@ -78,7 +78,7 @@ public func checkiCloudLogin(_ fn : @escaping () -> Void) {
       let z = Application.shared.windows.first
         #endif
       
-      if let z = z {
+      if let _ = z {
       } else {
         os_log("window reference was null.  I'm going to crash now", type: .error)
       }
@@ -89,9 +89,9 @@ public func checkiCloudLogin(_ fn : @escaping () -> Void) {
       }
       } }
     else if accountStatus == CKAccountStatus.available {
-      let q = DispatchSemaphore(value: 0)
+      // let q = DispatchSemaphore(value: 0)
       
-      isLoggedIn = true
+      // isLoggedIn = true
       fn()
     }
     }
