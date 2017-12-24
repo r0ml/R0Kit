@@ -107,6 +107,7 @@ public class Transcript: R0CollectionViewController<NSAttributedString, MyCell>,
   public override func collectionView(cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> Shim {
     let item = collectionView.makeCell(indexPath) { (x : MyCell) -> Void in
       x.setRepresentedObject( self.lines[indexPath.item] )
+      if (indexPath.item % 2) == 1 { x.myLayer.backgroundColor = Color(hex: 0xFCFCFC).cgColor }
     }
     return item
   }
@@ -115,21 +116,30 @@ public class Transcript: R0CollectionViewController<NSAttributedString, MyCell>,
     if let sv = collectionView.enclosingScrollView?.contentInset {
     let svx = sv.left + sv.right
     let w = collectionView.frame.width - 10 - svx
-    return CGSize(width: w, height: 22)
+      
+     // let l = self.collectionView(cellForItemAt: indexPath, in: collectionView)
+     
+      let l = Label()
+      l.attributedText = lines[indexPath.item]
+      let x = l.sizeThatFits(CGSize(width: w, height: -1))
+      return CGSize(width: w, height: x.height)
     } else {
       return CGSize(width: collectionView.frame.width - 10, height: 22)
     }
   }
   
   public func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, insetForSectionAt section: Int) -> EdgeInsets {
-    return EdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+    return EdgeInsets(horiz: 5, vert: 0)
+    // return EdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
   }
   
   public func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-    return 10
+    return 0
   }
   
-  
+  public func collectionView(_ collectionView: NSCollectionView, layout collectionViewLayout: NSCollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+    return 0
+  }
   
   }
 
@@ -196,8 +206,6 @@ public class MyNSTableRowView: NSTableRowView {
 }
 */
   
-extension Transcript : TableViewDelegate {
-}
 
   /*
 extension Transcript : TableViewDataSource {
@@ -232,15 +240,16 @@ extension Transcript : TableViewDataSource {
   
   
   public class MyCell: CollectionReusableView<NSAttributedString> {
-    private var textField : TextField!
+    public var textField : Label!
     
     override public func setup() {
-      let l = TextField()
+      let l = Label()
       self.textField = l
+      l.isBordered = false
+      l.textColor = Color.darkGray
+      l.drawsBackground = false
       
       l.addInto(self)
-      
-      NSLayoutConstraint(item: l, attribute: .centerY, relatedBy: .equal, toItem: l.superview!, attribute: .centerY, multiplier: 1.2, constant: 0).isActive = true
     }
     
     public override func prepareForReuse() {
