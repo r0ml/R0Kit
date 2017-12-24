@@ -1,9 +1,139 @@
 
 // FIXME switch to using CollectionView from TableView
 #if os(macOS)
-class MyTableView : TableView {
-}
 
+  
+  /*class MyTableView : TableView {
+} */
+  
+  
+public class Transcript: R0CollectionViewController<NSAttributedString, MyCell>, CollectionViewDelegateFlowLayout {
+  var lines: [NSAttributedString] = []
+  var limit : Int = 1000
+  
+    
+  override public func setup() {
+    NotificationCenter.default.addObserver(forName: Notification.Name.statusUpdate, object: nil, queue: nil) { noti in
+      DispatchQueue.main.async {
+        if let line = noti.userInfo?["msg"] as? String {
+          self.append( line )
+        }
+      }
+    }
+    
+    NotificationCenter.default.addObserver(forName: Notification.Name.errorReport, object: nil, queue: nil) { noti in
+      DispatchQueue.main.async {
+        let err = noti.userInfo?["err"] ?? "unknown error"
+        let msg = noti.userInfo?["msg"] ?? "unknown msg"
+        self.append( "*** \(msg): \(err) ***" )
+      }
+    }
+
+    }
+  
+  
+  public func append(_ z : String) {
+    // before adding stuff, am I at the end?
+    
+    
+    /*let vh = tblv.visibleRect.minY + tblv.visibleRect.height
+    let hml = tblv.bounds.height - (lines.count == 0 ? 0 : tblv.rect(ofRow: lines.count-1).height)
+    let scrollQ = vh >= hml
+    */
+    //    if (!scrollQ) {
+    //      scrollQ = true
+    //     }
+    
+    let zz = NSAttributedString(string: z)
+    lines.append(zz)
+    
+    
+    // self.collectionView.beginUpdates()
+    if lines.count > limit {
+      lines.removeFirst( lines.count - limit)
+      self.collectionView.deleteItems(at: [IndexPath(item: 0, section: 0)])
+    }
+    self.collectionView.insertItems(at: [IndexPath(item: lines.count-1, section: 0)])
+    // tblv.endUpdates()
+    
+    /*if scrollQ {
+      let st = tblv.bounds.height - tblv.visibleRect.height
+      tblv.scroll(CGPoint(x: 0, y: st+tblv.visibleRect.minY ))
+    } */
+  }
+
+  
+  public func makeWindow() -> NSWindow {
+    let wnd = NSWindow(contentRect: CGRect(x: 100, y: 100, width: 600, height: 200)
+      , styleMask: [.closable, .resizable, .titled, .miniaturizable], backing: .buffered, defer: true)
+    wnd.isReleasedWhenClosed = false
+    wnd.title = "Transcript"
+    wnd.isOpaque = false
+    wnd.center()
+    let fan = NSWindow.FrameAutosaveName(rawValue: "Transcript")
+    
+    wnd.setFrameAutosaveName(fan)
+    
+    let tblv = self.collectionView
+    
+    let sv = NSScrollView(frame: CGRect.zero)
+    sv.hasVerticalScroller = true
+    sv.documentView = tblv
+    sv.hasHorizontalScroller = true
+    sv.autohidesScrollers = false
+    
+    wnd.contentView = sv
+
+    return wnd
+    
+  }
+
+  public func open() {
+    // wnd.contentView = v
+    let wnd = self.makeWindow()
+    wnd.makeKeyAndOrderFront(nil)
+  }
+  
+
+  // section 1 is optical, section 2 is sunglasses?
+  override public func numberOfSections(in collectionView: CollectionView) -> Int {
+    return 1 // maybe 4 !!
+  }
+  
+  public override func collectionView(_ collectionView: CollectionView, numberOfItemsInSection section: Int) -> Int {
+    return lines.count
+  }
+  
+  public override func collectionView(cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> Shim {
+    let item = collectionView.makeCell(indexPath) { (x : MyCell) -> Void in
+      x.setRepresentedObject( self.lines[indexPath.item] )
+    }
+    return item
+  }
+  
+  override public func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    if let sv = collectionView.enclosingScrollView?.contentInset {
+    let svx = sv.left + sv.right
+    let w = collectionView.frame.width - 10 - svx
+    return CGSize(width: w, height: 22)
+    } else {
+      return CGSize(width: collectionView.frame.width - 10, height: 22)
+    }
+  }
+  
+  public func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, insetForSectionAt section: Int) -> EdgeInsets {
+    return EdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+  }
+  
+  public func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+    return 10
+  }
+  
+  
+  
+  }
+
+  /*
 public class Transcript : View {
   var lines : [String] = []
   var limit : Int = 1000
@@ -33,89 +163,23 @@ public class Transcript : View {
     tblv.reloadData()
   }
 
-  public func append(_ z : String) {
-    // before adding stuff, am I at the end?
-    let vh = tblv.visibleRect.minY + tblv.visibleRect.height
-    let hml = tblv.bounds.height - (lines.count == 0 ? 0 : tblv.rect(ofRow: lines.count-1).height)
-    let scrollQ = vh >= hml
-    
-//    if (!scrollQ) {
-//      scrollQ = true
-//     }
-    lines.append(z)
-    tblv.beginUpdates()
-    if lines.count > limit {
-      lines.removeFirst( lines.count - limit)
-      tblv.deleteRows(at: [IndexPath(item: 0, section: 0)], with: TableView.AnimationOptions.slideUp)
-    }
-    tblv.insertRows(at: [IndexPath(item: lines.count-1, section: 0)], with: TableView.AnimationOptions.effectFade)
-    tblv.endUpdates()
-    if scrollQ {
-      let st = tblv.bounds.height - tblv.visibleRect.height
-      tblv.scroll(CGPoint(x: 0, y: st+tblv.visibleRect.minY ))
-    }
-  }
 
   public override init(frame: CGRect) {
     super.init(frame: frame)
     makeWindow()
     
-    NotificationCenter.default.addObserver(forName: Notification.Name.statusUpdate, object: nil, queue: nil) { noti in
-      DispatchQueue.main.async {
-        if let line = noti.userInfo?["msg"] as? String {
-          self.append( line )
-        }
-      }
-    }
+
   }
   
   public required init?(coder decoder: NSCoder) {
     fatalError("init(coder:) has not been implemented")
   }
   
-  public func makeWindow() {
-    wnd = NSWindow(contentRect: CGRect(x: 100, y: 100, width: 600, height: 200)
-      , styleMask: [.closable, .resizable, .titled, .miniaturizable], backing: .buffered, defer: true)
-    wnd.isReleasedWhenClosed = false
-    wnd.title = "Transcript"
-    wnd.isOpaque = false
-    wnd.center()
-    let fan = NSWindow.FrameAutosaveName(rawValue: "Transcript")
-    
-    wnd.setFrameAutosaveName(fan)
-    
-    tblv = NSTableView(frame: CGRect.zero)
-    let a = NSTableColumn(identifier: NSUserInterfaceItemIdentifier(rawValue: "Msg"))
-    a.headerCell.title = "Msg"
-    a.width = 100
-    a.minWidth = 50
-    a.maxWidth = 500
-    tblv.addTableColumn(a)
-    tblv.dataSource = self
-    tblv.delegate = self
-    tblv.usesAutomaticRowHeights = true
-    tblv.usesAlternatingRowBackgroundColors = true
-    
-    let sv = NSScrollView(frame: CGRect.zero)
-    sv.hasVerticalScroller = true
-    sv.documentView = tblv
-    sv.hasHorizontalScroller = true
-    sv.autohidesScrollers = false
-    
-    sv.addInto(self)
-    
-    wnd.contentView = self
-    
-  }
-  
-  public func open() {
-    // wnd.contentView = v
-
-    wnd.makeKeyAndOrderFront(nil)
-  }
   
 }
-
+*/
+  
+  /*
 // this is to redraw the selection
 public class MyNSTableRowView: NSTableRowView {
   
@@ -130,13 +194,12 @@ public class MyNSTableRowView: NSTableRowView {
     }
   }
 }
-
+*/
+  
 extension Transcript : TableViewDelegate {
-  public func tableView(_ tableView: TableView, rowViewForRow row: Int) -> NSTableRowView? {
-    return MyNSTableRowView()
-  }
 }
 
+  /*
 extension Transcript : TableViewDataSource {
   public func numberOfRows(in tableView: TableView) -> Int {
     return lines.count
@@ -165,6 +228,45 @@ extension Transcript : TableViewDataSource {
     }
   }
 }
+  */
+  
+  
+  public class MyCell: CollectionReusableView<NSAttributedString> {
+    private var textField : TextField!
+    
+    override public func setup() {
+      let l = TextField()
+      self.textField = l
+      
+      l.addInto(self)
+      
+      NSLayoutConstraint(item: l, attribute: .centerY, relatedBy: .equal, toItem: l.superview!, attribute: .centerY, multiplier: 1.2, constant: 0).isActive = true
+    }
+    
+    public override func prepareForReuse() {
+    }
+
+    override public func setRepresentedObject(_ c: NSAttributedString?) {
+      if let x = c {
+        let l = self.textField!
+
+        // l.font = ProximaNova(30, bold: true)
+      
+        l.attributedText = x
+      
+        let z = l.sizeThatFits(CGSize(width: -1, height: -1))
+      // l.setFrameSize(z)
+
+        l.myLayer.shadowColor = Color.white.cgColor
+        l.myLayer.shadowOffset = CGSize(width: 0.0, height: 0.0)
+        l.myLayer.shadowOpacity = 1.0
+        l.myLayer.shadowRadius = 3.0
+        l.myLayer.zPosition = 5
+      }
+    }
+    
+  }
+
 
 #endif
 

@@ -10,7 +10,7 @@ public func repeatCursor(db : CKDatabase, zoneID zid: CKRecordZoneID, query qry 
   func mkc() -> ((CKQueryCursor?, Error?) -> Void) { return
   { cursor, error in
     if let e = error {
-      os_log("getting repeating cursor: %@", e.localizedDescription)
+      Notification.errorReport("getting repeating cursor", e)
     } else {
       xfn() // this is the "I've finished this block" code
       if let c = cursor {
