@@ -166,7 +166,6 @@ import Foundation
   }
   
   extension View {
-    var xlayer : CALayer { return self.layer }
     
     open var myLayer: CALayer {
       get { return self.layer }
@@ -396,7 +395,6 @@ import Foundation
   }
   
   extension View {
-    public var xlayer : CALayer { return self.layer! }
     
     open var myLayer: CALayer {
       get { self.wantsLayer = true; return self.layer! }
@@ -572,7 +570,7 @@ extension View {
     slideInFromLeftTransition.fillMode = kCAFillModeRemoved
     
     // Add the animation to the View's layer
-    self.xlayer.add(slideInFromLeftTransition, forKey: "slideInFromLeftTransition")
+    self.myLayer.add(slideInFromLeftTransition, forKey: "slideInFromLeftTransition")
   }
 }
 

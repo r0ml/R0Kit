@@ -369,8 +369,11 @@ extension DataModel {
 }
 
 public class LocalAsset : Codable {
-  public var url : URL // local file URL
-  public init(_ u : URL) { url = u }
+  public var relativeFile : String // local file URL
+  public init(_ u : String) { relativeFile = u }
+  lazy var url : URL = {
+    return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(relativeFile)
+  }()
   public var data : Data? { get { return try? Data(contentsOf: url) } }
   public var image : Image? { get { return data?.image } }
 }

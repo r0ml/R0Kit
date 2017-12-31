@@ -279,37 +279,37 @@ extension View {
       #endif
     
     self.addGestureRecognizer(z)
-  }
+ }
 }
 
+#if os(iOS)
+  
+  public typealias TapGestureRecognizer = UITapGestureRecognizer
+  public typealias SwipeGestureRecognizer = UISwipeGestureRecognizer
+  public typealias PanGestureRecognizer = UISwipeGestureRecognizer
+  public typealias RotationGestureRecognizer = UIRotationGestureRecognizer
+  public typealias ZoomGestureRecognizer = UIPinchGestureRecognizer
+  
+#elseif os(macOS)
 
-#if false
-extension UIView {
-  /*func onTapGesture(_ fn : @escaping () -> Void) {
-    let x = ClosX(fn)
-    self.addGestureRecognizer( UITapGestureRecognizer(target: x, action: x.selector ) )
-  }*/
-  func onTapGesture(_ fn : @escaping (UITapGestureRecognizer) -> Void) {
-    let x = Unmanaged.passRetained(XR(gesture: { z in fn(z as! UITapGestureRecognizer) } )).takeUnretainedValue()
-    self.addGestureRecognizer( UITapGestureRecognizer(target: x, action: #selector(XR.goGesture(_:)) ) )
-  }
+  public typealias TapGestureRecognizer = NSClickGestureRecognizer
+  public typealias SwipeGestureRecognizer = NSPanGestureRecognizer
+  public typealias PanGestureRecognizer = NSPanGestureRecognizer
+  public typealias RotationGestureRecognizer = NSRotationGestureRecognizer
+  public typealias ZoomGestureRecognizer = NSMagnificationGestureRecognizer
   
-  func onSwipeGesture(_ dir : UISwipeGestureRecognizerDirection, _ fn : @escaping(UISwipeGestureRecognizer) -> Void) {
-    let x = Unmanaged.passRetained(XR(gesture: { z in fn(z as! UISwipeGestureRecognizer) } )).takeUnretainedValue()
-    let swipeRight = UISwipeGestureRecognizer(target: x, action: #selector(XR.goGesture(_:)) )
-    swipeRight.direction = dir
-    self.addGestureRecognizer(swipeRight)
-  }
-  
-  func onRotationGesture(_ fn : @escaping(UIRotationGestureRecognizer) -> Void) {
-    let x = Unmanaged.passRetained(XR(gesture: { z in fn(z as! UIRotationGestureRecognizer) } )).takeUnretainedValue()
-    let swipeRot = UIRotationGestureRecognizer(target: x, action: #selector(XR.goGesture(_:)) )
-    self.addGestureRecognizer(swipeRot)
-  }
-  
-}
-
 #endif
+
+extension View {
+  public func onGesture<T : GestureRecognizer>(param : @escaping ((T) -> Void) = { (_ : T) in }, _ fn : @escaping (T) -> Void) {
+    let x = ClosX( {
+      if let d = $0 as? T { fn(d) }
+    })
+    let m = T(target: x, action: x.selector)
+    param(m)
+    self.addGestureRecognizer( m )
+  }
+}
 
 // ====================================================================================================
 // Layout
@@ -359,6 +359,11 @@ public class Stacker {
   @discardableResult public func inset(_ i : CGFloat) -> Stacker {
     ins = i
     cntr = false
+    return self
+  }
+  
+  @discardableResult public func views(_ v : [View]) -> Stacker {
+    v.forEach { self.view($0) }
     return self
   }
   

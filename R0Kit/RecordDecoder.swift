@@ -45,14 +45,15 @@ public class DataModelError : Error {
 
 extension CKAsset {
   public func getLocalAsset(key : String, record : CKRecord) -> LocalAsset? {
-    let tempdir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(record.recordID.zoneID.zoneName).appendingPathComponent(record.recordType).appendingPathComponent(key)
+    let tdir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    let tempdir = URL(string: record.recordID.zoneID.zoneName)!.appendingPathComponent(record.recordType).appendingPathComponent(key)
     // FIXME: create a directory for this zone?
     do {
-      try FileManager.default.createDirectory(atPath: tempdir.path, withIntermediateDirectories: true, attributes: nil)
+      try FileManager.default.createDirectory(at:  URL.init(fileURLWithPath: tempdir.path, relativeTo: tdir) , withIntermediateDirectories: true, attributes: nil)
       let tempurl = tempdir.appendingPathComponent(record.recordID.recordName)
       let d = try Data(contentsOf: self.fileURL)
-      try d.write(to: tempurl, options: .atomicWrite)
-      return LocalAsset(tempurl)
+      try d.write(to: URL.init(fileURLWithPath: tempurl.path, relativeTo: tdir), options: .atomicWrite)
+      return LocalAsset(tempurl.path)
     } catch {
       os_log("failed to save asset %@: %@", type: .error , key, error.localizedDescription )
     }
