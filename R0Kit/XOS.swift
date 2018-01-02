@@ -115,7 +115,7 @@ import Foundation
 
   }
 
-  public protocol Draggable : AnyObject {
+  public protocol  Draggable : AnyObject {
   //  static func doDrop(_ pb : NSPasteboard) -> Bool
   //  static var types : [NSPasteboard.PasteboardType] {
   //    get
@@ -171,6 +171,10 @@ import Foundation
       get { return self.layer }
     }
 
+    open var needsDisplay : Bool {
+      get { return false }
+      set { self.setNeedsDisplay() }
+    }
   }
   
   /*

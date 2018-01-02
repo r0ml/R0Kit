@@ -3,7 +3,7 @@ import CloudKit
 
 public class DataCache<T : DataModel> : NSObject {
   var _singleton : [String : T] = [:]
-  var rootID: CKRecordID?
+  public var rootID: CKRecordID!
   
   public func findShare(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     if let _ = rootID { return }
@@ -20,8 +20,8 @@ public class DataCache<T : DataModel> : NSObject {
     
     // FIXME:  Do I really want to delete all shares?
     // deletes all existing shares
-    let query = CKQuery(recordType: "RootRecord", predicate: NSPredicate(format: "TRUEPREDICATE", argumentArray: nil))
-    query.sortDescriptors = [NSSortDescriptor(key: "___modTime", ascending: false)] // latest time first
+    let query = CKQuery(recordType: "RootRecord", predicate: NSPredicate(value: true))
+    // query.sortDescriptors = [NSSortDescriptor(key: "___modTime", ascending: false)] // latest time first
     
     dbx.perform(query, inZoneWith: zonid) { (records, error) in
       Notification.errorReport("finding root records failed", error)
@@ -148,6 +148,14 @@ public class DataCache<T : DataModel> : NSObject {
   
   public func uploadToICloud(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     // TODO: what if I have write access to the shared zone?
+    if let _ = self.rootID { }
+    else {
+      self.findShare(dbx, zonid)
+    }
+    
+    if self.rootID == nil {
+      print("*** the rootID is nil!!! ***")
+    }
     
     var candidates = singleton
     
@@ -206,23 +214,16 @@ public class DataCache<T : DataModel> : NSObject {
       }
       os_log("modify %@ wrote %d records", type: .info, T.name, recs?.count ?? 0)
       
-      // this part figures out which records were successfully written, and
-      // leaves tux with the remainder that weren't sucessfully written.
-      // this presumes I know what to do with the ones that weren't successfully written
-      
-      var n = 0
-      var tuxx = tux
-      if let xrecs = recs, xrecs.count > 0 {
+      // if the record was successfully modified, I need to update the local cache to have the
+      // right encoded system fields
+      if let xrecs = recs {
         xrecs.forEach { wrot in
-          if let x = tuxx.index(where: { wrot.recordID.recordName == $0.recordID.recordName }) {
-            tuxx.remove(at: x)
-            n += 1
+          if let h = T.init(record: wrot) {
+            T.base.cache(h)
           }
         }
+        Notification.statusUpdate("\(xrecs.count) records updated")
       }
-      // at this point, tuxx has the records which were not successfuly written.
-      
-      Notification.statusUpdate("\(n) records updated")
     }
     dbx.add(mro)
   }

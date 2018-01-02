@@ -406,9 +406,11 @@ public class Stacker {
       // greaterThanOrEqualTo ?
     let p = prev == nil ? view : prev!
     if vert {
-        p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
+       //  p.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -pad).isActive = true
+      p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
     } else {
-        p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
+       //  p.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -pad).isActive = true
+      p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
     }
     prev = nil
     pad = 0
