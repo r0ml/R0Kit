@@ -175,6 +175,11 @@ import Foundation
       get { return false }
       set { self.setNeedsDisplay() }
     }
+    
+    open func setTransparentBackground() {
+      self.backgroundColor = Color.clear
+    }
+    
   }
   
   /*
@@ -424,6 +429,9 @@ import Foundation
       set { self.alphaValue = newValue }
     }
 
+    public func setTransparentBackground() {
+      self.drawsBackground = false
+    }
   }
   
   extension TextField {

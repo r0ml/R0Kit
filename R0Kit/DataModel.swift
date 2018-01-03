@@ -127,6 +127,8 @@ public class DataCache<T : DataModel> : NSObject {
   
   public func restoreFromFile() {
     _singleton = [String : T].decode(from: FileManager.default.contents(atPath: T.filename.path)) ?? [:]
+    // FIXME:  I need to create a notification that the model changed (everything)
+    NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": "restoreAll"] ) )
   }
   
   public static func restoreFromFile() -> DataCache<T> {
@@ -136,13 +138,15 @@ public class DataCache<T : DataModel> : NSObject {
   }
   
   public func cache(_ v : T?) {
-    if let v = v  { singleton[v.getKey()] = v
+    if let v = v  {
+      let riq = singleton.index(forKey: v.getKey()) == nil
+      singleton[v.getKey()] = v
       // TODO: this should trigger a delayed save() -- but additional invocations should use the same delayed save()
       
       // this creates a notification so that views that depend on this model can update themselves
       // FIXME:  if I could indicate whether it was an insert, delete, or update -- and what was being modified,
       //         that would make view udpates smoother.
-      NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: [:]) )
+      NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": (riq ? "insert" : "replace"), "key": v.getKey()]) )
     }
   }
   
