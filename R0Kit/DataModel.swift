@@ -63,6 +63,7 @@ public class DataCache<T : DataModel> : NSObject {
   
   public func notify() {
     NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: [:]) )
+    print("notified")
   }
   
   public func save() {
