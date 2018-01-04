@@ -139,14 +139,15 @@ public class DataCache<T : DataModel> : NSObject {
   
   public func cache(_ v : T?) {
     if let v = v  {
-      let riq = singleton.index(forKey: v.getKey()) == nil
-      singleton[v.getKey()] = v
+      let k = v.getKey()
+      let riq = _singleton.index(forKey: k) == nil
+      _singleton[k] = v
       // TODO: this should trigger a delayed save() -- but additional invocations should use the same delayed save()
       
       // this creates a notification so that views that depend on this model can update themselves
       // FIXME:  if I could indicate whether it was an insert, delete, or update -- and what was being modified,
       //         that would make view udpates smoother.
-      NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": (riq ? "insert" : "replace"), "key": v.getKey()]) )
+      NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": (riq ? "insert" : "replace"), "key": k]) )
     }
   }
   
@@ -233,8 +234,8 @@ public class DataCache<T : DataModel> : NSObject {
   }
   
   // views which need to be notified up updates can use this.
-  public func watch(using block: @escaping (Notification) -> Void) {
-    NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: T.name), object: nil, queue: nil, using: block)
+  public func watch(_ q : OperationQueue? = nil, using block: @escaping (Notification) -> Void) {
+    NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: T.name), object: nil, queue: q, using: block)
   }
   
   // FIXME: If I want to paste in data, get this working again.
