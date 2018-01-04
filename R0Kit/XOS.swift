@@ -301,6 +301,7 @@ import Foundation
       get { return alignment }
       set { alignment = newValue }
     }
+    
     // What I really want is for my superclass (e.g. VStack) to ignore my desired size, and force
     // the label to remain fixed-size
     open override var intrinsicContentSize: NSSize {
@@ -612,61 +613,6 @@ extension Data {
     return Image(data: self)
   }
 }
-
-/*
-public class VStack : View {
-  public convenience init(_ vs : [View], space sep: CGFloat ) {
-    self.init(frame: .zero)
-    vs.forEach {
-      // $0.setContentHuggingPriority(.defaultLow, for: .horizontal)
-      // $0.setContentHuggingPriority(.defaultLow, for: .vertical)
-      // $0.setContentCompressionResistancePriority( .defaultHigh, for: .vertical)
-      $0.translatesAutoresizingMaskIntoConstraints = false
-      $0.addInto(self, with: [.leading, .trailing]) }
-    if vs.isEmpty { return }
-    var nc = [NSLayoutConstraint]()
-    nc.append(vs[0].topAnchor.constraint(equalTo: self.topAnchor, constant: sep/2.0))
-    nc.append(vs[vs.count-1].bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -sep/2.0))
-    (0..<vs.count-1).forEach {
-      nc.append(vs[$0].bottomAnchor.constraint(equalTo: vs[$0+1].topAnchor, constant: -sep))
-    }
-    NSLayoutConstraint.activate(nc)
-  }
-  
-  override init(frame: CGRect) {
-    super.init(frame: frame)
-  }
-  
-  public required init?(coder aDecoder: NSCoder) {
-    fatalError("init(coder:) has not been implemented")
-  }
-}
-*/
-/*
-public class HStack : View {
-  public convenience init(_ vs : [View], space sep: CGFloat ) {
-    self.init(frame: .zero)
-    vs.forEach {
-      $0.setContentHuggingPriority(.defaultLow, for: .horizontal)
-      $0.setContentHuggingPriority(.defaultLow, for: .vertical)
-      // $0.setContentCompressionResistancePriority( .defaultHigh, for: .vertical)
-      // $0.setContentCompressionResistancePriority( .defaultHigh, for: .horizontal)
-      $0.translatesAutoresizingMaskIntoConstraints = false
-      $0.addInto(self, with: [.top, .bottom]) }
-    if vs.isEmpty { return }
-    var nc = [NSLayoutConstraint]()
-    nc.append(vs[0].leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: sep/2.0))
-    nc.append(vs[vs.count-1].trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -sep/2.0))
-    (0..<vs.count-1).forEach {
-      nc.append(vs[$0].trailingAnchor.constraint(equalTo: vs[$0+1].leadingAnchor, constant: -sep))
-    }
-    NSLayoutConstraint.activate(nc)
-  }
-  
-  override init(frame: CGRect) { super.init(frame: frame) }
-  public required init?(coder aDecoder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-}
- */
 
 extension EdgeInsets {
   public init(all: CGFloat) {

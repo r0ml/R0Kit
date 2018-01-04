@@ -317,11 +317,6 @@ extension View {
 
 extension View {
   public func stacker(vertical : Bool = false) -> Stacker { return Stacker(self, vertical: vertical) }
-  
-  /*public func stack(_ s : Stackable ...) {
-    let sx = Stacker(self)
-    s.forEach { sx ~ $0 }
-  }*/
 }
 
 infix operator ~ : AdditionPrecedence
@@ -333,6 +328,8 @@ public enum Stackable {
   case view(View)
 }
 
+/* This is a helper class which lets me create horizontal or vertical stacks of views
+ using constraints */
 public class Stacker {
   let view : View
   var prev : View? = nil
@@ -341,9 +338,6 @@ public class Stacker {
   var vert : Bool
   var ins : CGFloat = 5
   
-/* var subvs = [View]()
-   var pads = [CGFloat]()
- */
   init(_ v : View, vertical : Bool) { view = v; vert = vertical }
   
   @discardableResult public func pad(_ p : CGFloat) -> Stacker {
@@ -418,71 +412,3 @@ public class Stacker {
     cntr = false
   }
 }
-
-/*
-@discardableResult public func ~(lhs: Stacker, rhs: Stackable ) -> Stacker {
-    switch rhs {
-    case .view(let v): // the view gets added as a subview.  The leading (left) anchor then gets pinned to "the last thing" -- which is initially the superview
-      // there could be a "pending pad" -- in which case it is applied.
-      // unfortunately, at this moment, there is no way of knowing if the final application is going to be a trailing or a bottom.
-      // the other option is to then accumulate all views and pads until the final one.
-      // under accumulation, the pads and views alternate (or get skipped).
-      // if the previous append was a pad, the view gets appended.
-      // if the previous append was not a pad, a zero pad gets appended, then the view.
-      if lhs.subvs.count == lhs.pads.count {
-        lhs.pads.append(0)
-      }
-      lhs.subvs.append(v)
-    case .pad(let p):  // pend the pad.  If there is a pending pad, this pad gets added to it
-      if lhs.pads.count == lhs.subvs.count {
-        lhs.pads.append(p)
-      } else {
-        lhs.pads[lhs.pads.count-1]=lhs.pads[lhs.pads.count-1]+p
-      }
-    case .trailing: // This is the end of the line -- resolve the subviews by generating horizontal constraints
-      if lhs.pads.count == lhs.subvs.count {
-        lhs.pads.append(0)
-      }
-      if lhs.subvs.count > 0 {
-        lhs.view.addSubview(lhs.subvs[0])
-        lhs.subvs[0].leadingAnchor.constraint(equalTo: lhs.view.leadingAnchor, constant: lhs.pads[0]).isActive = true
-        for i in 1..<lhs.subvs.count {
-          lhs.view.addSubview(lhs.subvs[i])
-          lhs.subvs[i].leadingAnchor.constraint(equalTo: lhs.subvs[i-1].trailingAnchor, constant: lhs.pads[i]).isActive = true
-        }
-        // greaterThanOrEqualTo ?
-        lhs.subvs[lhs.subvs.count-1].trailingAnchor.constraint(equalTo: lhs.view.trailingAnchor, constant: -lhs.pads[lhs.subvs.count]).isActive = true
-      } else {
-        lhs.view.leadingAnchor.constraint(equalTo: lhs.view.trailingAnchor, constant: -lhs.pads[0]).isActive = true
-      }
-      lhs.subvs.forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
-      lhs.subvs.forEach { $0.heightAnchor.constraint(equalTo: lhs.view.heightAnchor).isActive = true }
-      lhs.subvs.forEach { $0.topAnchor.constraint(equalTo: lhs.view.topAnchor).isActive = true }
-      lhs.subvs = []
-      lhs.pads = []
-    case .bottom:  // This is the end of the line -- resolve the subviews by generating vertical constraints
-      if lhs.pads.count == lhs.subvs.count {
-        lhs.pads.append(0)
-      }
-      if lhs.subvs.count > 0 {
-        lhs.view.addSubview(lhs.subvs[0])
-        lhs.subvs[0].topAnchor.constraint(equalTo: lhs.view.topAnchor, constant: lhs.pads[0]).isActive = true
-        for i in 1..<lhs.subvs.count {
-          lhs.view.addSubview(lhs.subvs[i])
-          lhs.subvs[i].topAnchor.constraint(equalTo: lhs.subvs[i-1].bottomAnchor, constant: lhs.pads[i]).isActive = true
-        }
-        // greaterThanOrEqualTo ?
-        lhs.subvs[lhs.subvs.count-1].bottomAnchor.constraint(equalTo: lhs.view.bottomAnchor, constant: -lhs.pads[lhs.subvs.count]).isActive = true
-      } else {
-        lhs.view.topAnchor.constraint(equalTo: lhs.view.bottomAnchor, constant: -lhs.pads[0]).isActive = true
-      }
-      lhs.subvs.forEach { $0.translatesAutoresizingMaskIntoConstraints = false }
-      lhs.subvs.forEach { $0.widthAnchor.constraint(equalTo: lhs.view.widthAnchor).isActive = true }
-      lhs.subvs.forEach { $0.leadingAnchor.constraint(equalTo: lhs.view.leadingAnchor).isActive = true }
-      lhs.subvs = []
-      lhs.pads = []
-    }
-    return lhs
-  }
-*/
-
