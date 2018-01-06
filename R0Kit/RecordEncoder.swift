@@ -28,6 +28,13 @@ public extension RawRepresentable where Self : CKRecordValuable {
   }
 }
 
+/*extension Bool : CKRecordValuable {
+  public var recordValue : CKRecordValue { return self as CKRecordValue }
+  public static func from(recordValue: CKRecordValue) -> Bool {
+    return recordValue as! Bool
+  }
+}*/
+
 public protocol CKRecordValuable {
   var recordValue : CKRecordValue { get }
   static func from(recordValue: CKRecordValue) -> Self

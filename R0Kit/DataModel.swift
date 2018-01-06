@@ -51,13 +51,7 @@ public class DataCache<T : DataModel> : NSObject {
     set {
       _singleton = newValue
       notify()
-      if !queued {
-        queued = true
-        myQ.asyncAfter(deadline: .now() + 1.0) {
-          self.queued = false
-          self.save()
-        }
-      }
+      self.save()
     }
   }
   
@@ -68,7 +62,14 @@ public class DataCache<T : DataModel> : NSObject {
   
   public func save() {
     // This notification is really just for updating a status line to indicate that a save was attempted.
-    Notification.statusUpdate("\(singleton.count) \(T.name) saved")
+    if !queued {
+      queued = true
+      myQ.asyncAfter(deadline: .now() + 1.0) {
+        self.queued = false
+
+    
+    
+    Notification.statusUpdate("\(self.singleton.count) \(T.name) saved")
     
     let fnam = T.filename
     let g = fnam.deletingLastPathComponent()
@@ -77,11 +78,12 @@ public class DataCache<T : DataModel> : NSObject {
     }
     
     do {
-      try singleton.encode()?.write(to: fnam)
+      try self._singleton.encode()?.write(to: fnam)
     } catch let err {
       os_log("writing %@ to %@ failed: %@", type: .error , T.name, T.filename.path, err.localizedDescription )
     }
   }
+    }}
   
   // this downloads (and stores locally) the iCloud table by running a query
   public func fromICloud(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
@@ -148,6 +150,8 @@ public class DataCache<T : DataModel> : NSObject {
       // this creates a notification so that views that depend on this model can update themselves
       // FIXME:  if I could indicate whether it was an insert, delete, or update -- and what was being modified,
       //         that would make view udpates smoother.
+      self.save()
+
       NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": (riq ? "insert" : "replace"), "key": k]) )
     }
   }
@@ -309,6 +313,9 @@ public protocol DataModel : Codable {
   static func downloadFromAPI()
   static var base : DataCache<Self> { get }
   
+  // for things with "external" related data (external references)
+  // provide for downloading the related external data when you
+  // download the main data (or upload)
   static func uploadRelated(_ : CKDatabase, _ : CKRecordZoneID)
   static func downloadRelated(_ : CKDatabase, _ : CKRecordZoneID)
 }

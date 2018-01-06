@@ -42,6 +42,10 @@ import Foundation
   public typealias ClickGestureRecognizer = UITapGestureRecognizer
   public typealias PressGestureRecognizer = UILongPressGestureRecognizer
   
+  public typealias StackView = UIStackView
+  public typealias StackViewAlignment = UIStackViewAlignment
+  public typealias StackViewDistribution = UIStackViewDistribution
+
 #elseif os(macOS)
   @_exported import AppKit
   
@@ -77,6 +81,10 @@ import Foundation
   
   public typealias ClickGestureRecognizer = NSClickGestureRecognizer 
   public typealias PressGestureRecognizer = NSPressGestureRecognizer
+  
+  public typealias StackView = NSStackView
+  public typealias StackViewAlignment = NSStackView.Gravity
+  public typealias StackViewDistribution = NSStackView.Distribution
 
 #endif
 
@@ -194,6 +202,7 @@ import Foundation
     }
   }
  */
+  
   extension UIControl {
     public func addTarget( for forevent: UIControlEvents, _ fn: @escaping (AnyObject?)->Void ) -> Void {
       let x = ClosX(fn)
@@ -238,7 +247,15 @@ import Foundation
 #elseif os(macOS)
   
   // public typealias IndexPath = NSIndexPath
-  
+ 
+  extension IndexPath {
+     public var row : Int { get { return self.item } }
+
+     public init(row: Int, section: Int) {
+       self.init(item: row, section: section)
+     }
+  }
+ 
   open class CollectionReusableView<T> : View {
     open class var identifier : String { return String(describing: T.self) }
     
@@ -282,6 +299,7 @@ import Foundation
     required override public init(frame: CGRect) {
       super.init(frame: frame)
       self.isEditable = false
+      self.isBordered = false
     }
     
     public required init?(coder: NSCoder) {
@@ -304,13 +322,29 @@ import Foundation
     
     // What I really want is for my superclass (e.g. VStack) to ignore my desired size, and force
     // the label to remain fixed-size
+    
     open override var intrinsicContentSize: NSSize {
       get {
         let d = super.intrinsicContentSize
-        return NSSize(width: min(d.width, 600), height: d.height)
+        return d
+        // return NSSize(width: min(d.width, 600), height: d.height)
       }
     }
+    
   }
+  
+ extension TextField {
+    public func setTransparentBackground() {
+      self.drawsBackground = false
+    }
+  }
+  
+  extension TextView {
+    public func setTransparentBackground() {
+      self.drawsBackground = false
+    }
+  }
+  
   public protocol Draggable : AnyObject /*, NSPasteboardReading */ {
     static func doDrop(_ pb : NSPasteboard) -> Bool
     static var types : [NSPasteboard.PasteboardType] {
@@ -430,9 +464,10 @@ import Foundation
       set { self.alphaValue = newValue }
     }
 
-    public func setTransparentBackground() {
-      self.drawsBackground = false
-    }
+    /* public func setTransparentBackground() {
+      // self.drawsBackground = false
+      self.backgroundColor = Color.clear
+    }*/
   }
   
   extension TextField {
@@ -641,7 +676,15 @@ extension View {
     (z.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: rtol ? insetBy.left : -insetBy.right)).isActive=true
     return z
   }
-  
+ 
+  public func addInto(guide: LayoutGuide, with: [Constraint] = [.top, .bottom, .leading, .trailing] ) {
+    if let ov = guide.owningView {
+      let z = self.superview == nil ? self : self.superview!
+      ov.addSubview(z)
+      z.fitInto(guide, with: with)
+    }
+  }
+ 
   public func addInto(_ view: View, with: [Constraint] =
     [.top, .bottom, .leading, .trailing]) {
     let z = self.superview == nil ? self : self.superview!
@@ -754,3 +797,10 @@ extension UIDevice {
   }
 #endif
 
+extension Date {
+  public static func from(_ s : String, format: String) -> Date? {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = format
+    return dateFormatter.date(from: s)
+  }
+}

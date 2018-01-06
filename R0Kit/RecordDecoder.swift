@@ -88,6 +88,7 @@ fileprivate struct RecordKeyedContainer<Key : CodingKey> : KeyedDecodingContaine
         return z.getLocalAsset(key: key.stringValue, record: decoder.record) as! T
       }
     }
+    // return nil
     throw DataModelError("nil value for \(key)")
   }
   

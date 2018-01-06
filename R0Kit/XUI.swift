@@ -412,3 +412,57 @@ public class Stacker {
     cntr = false
   }
 }
+
+#if os(macOS)
+
+  extension NSStackView {
+      public convenience init( arrangedSubviews vs: [View]) {
+          self.init(views: vs)
+      }
+
+      public var axis : NSUserInterfaceLayoutOrientation { get { return self.orientation }
+          set { self.orientation = newValue }
+      }
+  
+    }
+
+  extension CollectionView {
+      public func performBatchUpdates(_ updates: (() -> Void)?,
+                                      completion: ((Bool) -> Void)? = nil) {
+        self.performBatchUpdates(updates, completionHandler: completion)
+    }
+  }
+
+#endif
+
+public class HideableView<T : View> : View {
+  public let innerView : T
+  public init(_ view : T) {
+    self.innerView = view
+    super.init(frame: CGRect.zero)
+    innerView.addInto(self)
+  }
+  
+  public required init(coder: NSCoder) {
+    fatalError("not implemented yet")
+  }
+  
+  public var makeHidden : Bool { get {
+      print("ask is hidden")
+      return innerView.isHidden
+    }
+    set {
+      if newValue {
+        innerView.isHidden = true
+        innerView.removeFromSuperview()
+        let cc = self.constraints.filter { if let j = $0.secondItem as? View, j == self { return true } else { return false }}
+        self.removeConstraints(cc)
+      } else {
+        innerView.isHidden = false
+        innerView.addInto(self)
+      }
+    }
+  }
+  
+}
+

@@ -81,6 +81,7 @@
     public convenience init(frame: CGRect, collectionViewLayout: CollectionViewLayout) {
       self.init(frame: frame)
       self.collectionViewLayout = collectionViewLayout
+      self.collectionViewLayout = collectionViewLayout
     }
   }
   
@@ -309,6 +310,15 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
       lastBounds = z
       collectionView.invalidateLayout()
     }
+    
+    // FIXME: should this be true or false?
+    open override func viewWillAppear() {
+      self.viewWillAppear(false) // I don't know if this should be true or false
+    }
+    
+    open func viewWillAppear(_ animated: Bool) { // just so I can have an override
+    }
+    
   }
 #endif
 
