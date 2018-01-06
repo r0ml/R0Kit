@@ -255,8 +255,7 @@ extension Transcript : TableViewDataSource {
     public override func prepareForReuse() {
     }
 
-    override public func setRepresentedObject(_ c: NSAttributedString?) {
-      if let x = c {
+    override public func setRepresentedObject(_ x: NSAttributedString) {
         let l = self.textField!
 
         // l.font = ProximaNova(30, bold: true)
@@ -272,7 +271,6 @@ extension Transcript : TableViewDataSource {
         l.myLayer.shadowRadius = 3.0
         l.myLayer.zPosition = 5
       }
-    }
     
   }
 

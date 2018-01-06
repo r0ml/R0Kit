@@ -222,9 +222,10 @@ import Foundation
   }
   
   open class CollectionReusableView<T> : UICollectionReusableView {
-    private var representedObject : T? // since the view is reusable, this has to be modifiable
-    open func setRepresentedObject(_ x: T?) {
-      representedObject = x
+    // private var representedObject : T // since the view is reusable, this has to be modifiable
+    open func setRepresentedObject(_ x: T) {
+      // representedObject = x
+      fatalError("subclass did not override setRepresentedObject")
     }
 
     override public required init(frame: CGRect) {
@@ -261,9 +262,9 @@ import Foundation
     
     public var R0Class : T.Type { return T.self }
     
-    private var representedObject : T?
-    open func setRepresentedObject(_ x: T?) {
-      representedObject = x
+    // private var representedObject : T?
+    open func setRepresentedObject(_ x: T) {
+      fatalError("subclass did not override setRepresentedObject")
     }
     
     public override required init(frame: CGRect) {
@@ -300,6 +301,7 @@ import Foundation
       super.init(frame: frame)
       self.isEditable = false
       self.isBordered = false
+      self.setTransparentBackground()
     }
     
     public required init?(coder: NSCoder) {
