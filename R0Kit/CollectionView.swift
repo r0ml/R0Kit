@@ -145,6 +145,19 @@
         return z
       }
     }
+    
+   /* public func makeSupplementary<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> CollectionItemShim<U, T> {
+      if let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? CollectionItemShim<U, T> {
+        fn(item.itemView)
+        return item
+      } else {
+        let z = CollectionItemShim<U, T>.init(frame: CGRect.zero)
+        fn(z.itemView)
+        return z
+      }
+    }
+*/
+    
   }
   
 #elseif os(iOS)
@@ -157,7 +170,20 @@
       print("cant get here")
       return CollectionItemShim<U,T>()
     }
+    
+  /*  public func makeSupplementary<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> CollectionItemShim<U,T> {
+    if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? CollectionItemShim<U,T> {
+      fn(cell.itemView)
+      return cell
+    }
+    print("cant get here")
+    return CollectionItemShim<U,T>()
   }
+ */
+    
+    
+  }
+  
 #endif
 
 // because macos wants "itemForRepresentedObjectAt"  and iOS wants "cellForItemAt" there doesn't appear to be a way
@@ -169,24 +195,106 @@
 
 open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewController, CollectionViewDataSource, CollectionViewDelegate {
 
+  // This view is really a UICollectionReusableView
+
+  var headerFn : ((View, IndexPath) -> Void)?
+  var headerFnID : String! // UICollectionReusableView.Type?
+  
   open func numberOfSections(in collectionView: CollectionView) -> Int {
     return 0
   }
   open func collectionView(_ collectionView: CollectionView, numberOfItemsInSection section: Int) -> Int {
     return 0
   }
+ 
+  public var collectionView = CollectionView(empty: true)
+  public typealias Shim = CollectionItemShim<U, T>
+
+  open func setup() {
+    fatalError("failed to override CollectionViewController.setup")
+  }
   
+  public required init(with cellType: Shim.Type) {
+    super.init()
+    collectionView.delegate = self
+    collectionView.dataSource = self
+    
+    // *********************************************************************************
+    // THE DELEGATE, DATASOURCE, AND COLLECTIONVIEWLAYOUT MUST BE SET BEFORE REGISTERING
+    // *********************************************************************************
+    
+    collectionView.register(cellType)
+    setup()
+  }
+
+  public required convenience init() {
+    self.init(with: Shim.self)
+  }
+
+  public required convenience init?(coder: NSCoder) {
+    fatalError("init?(coder:) not implemented")
+  }
+  
+
   #if os(macOS)
+
+  var lastBounds : CGRect = CGRect.zero
+  
+  open override func viewWillLayout() {
+  super.viewWillLayout()
+  let z = collectionView.bounds
+  if z == lastBounds { return }
+  lastBounds = z
+  collectionView.invalidateLayout()
+  }
+  
+  // FIXME: should this be true or false?
+  open override func viewWillAppear() {
+  self.viewWillAppear(false) // I don't know if this should be true or false
+  }
+  
+  open func viewWillAppear(_ animated: Bool) { // just so I can have an override
+  }
+
+  
   public func collectionView(_ collectionView : CollectionView,
                              itemForRepresentedObjectAt indexPath: IndexPath) -> CollectionViewItem {
     return self.collectionView(cellForItemAt: indexPath, in: collectionView)
   }
+  
+
   #elseif os(iOS)
+  
+  
+    public static func addToMenu() {
+    }
+  
   public func collectionView(_ collectionView : CollectionView,
                              cellForItemAt indexPath: IndexPath) -> CollectionViewItem {
     return self.collectionView(cellForItemAt: indexPath, in: collectionView)
   }
+  
+  /*
+  public func supplementaryHeader<Y, Z : CollectionReusableView<Y>>(_ fn: @escaping (Z, IndexPath) -> Void) {
+  
+    headerFn = { (a,x) in fn(a as! Z, x) }
+    headerFnID = Z.identifier
+    
+  self.collectionView.register(Z.self, forSupplementaryViewOfKind: "UICollectionElementKindSectionHeader", withReuseIdentifier: headerFnID)
+  }
+  */
+  
   #endif
+  
+  public func supplementaryHeader<Y, Z : CollectionReusableView<Y>>(_ fn: @escaping (Z, IndexPath) -> Void) {
+    
+    headerFn = { (a,x) in fn( a as! Z, x) }
+    headerFnID = Z.identifier
+    
+    self.collectionView.register(Z.self, forSupplementaryViewOfKind: "UICollectionElementKindSectionHeader", withReuseIdentifier: Z.identifier)
+  }
+  
+
   
   open func collectionView(cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> CollectionItemShim<U, T> {
     return collectionView.makeCell(indexPath) { (T) -> Void in }
@@ -194,8 +302,39 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   #if os(macOS)
   open func collectionView(_ collectionView: CollectionView, viewForSupplementaryElementOfKind kind: CollectionView.SupplementaryElementKind, at indexPath: IndexPath) -> View {
-    return View()
+
+    switch kind {
+    case .sectionFooter:
+      break
+    case .sectionHeader:
+      let cell = collectionView.makeSupplementaryView(ofKind: .sectionHeader, withIdentifier: NSUserInterfaceItemIdentifier(rawValue: headerFnID), for: indexPath)
+      headerFn!(cell, indexPath)
+      return cell
+    default:
+      break
+    }
+    fatalError("there is way out -- I'm trying to get a supplementary view that doesn't exist")
+  
   }
+  
+  #elseif os(iOS)
+  
+  open func collectionView(_ collectionView: CollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+    
+    switch kind {
+      case "UICollectionElementKindSectionFooter":
+        break
+      case "UICollectionElementKindSectionHeader":
+        
+        let cell = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerFnID, for: indexPath)
+          headerFn!(cell, indexPath)
+          return cell
+      default:
+        break
+      }
+  fatalError("there is way out -- I'm trying to get a supplementary view that doesn't exist")
+    }
+  
   #endif
 
   open func collectionView(_ collectionView: CollectionView, didSelectItemsAt indexPaths: Set<IndexPath>) {
@@ -237,88 +376,12 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
 
 // CollectionViewController
 #if os(iOS)
-  open class R0CollectionViewController<VV, UU : CollectionReusableView<VV>> : CollectionViewController<VV, UU> {
-    
-    public typealias Shim = CollectionItemShim<VV, UU>
-    
-    public var collectionView = CollectionView(empty: true)
-    
-    public static func addToMenu() {
-    }
-    
-    open func setup() {
-      fatalError("failed to override R0CollectionViewController.setup")
-    }
 
-    public required init(with cellType: Shim.Type) {
-      super.init()
-      collectionView.delegate = self
-      collectionView.dataSource = self
-      collectionView.register(cellType)
-      setup()
-    }
-    
-    public required convenience init() {
-      self.init(with: Shim.self)
-    }
-    
-    public required convenience init?(coder: NSCoder) {
-      fatalError("init?(coder:) not implemented")
-    }
-  }
 #endif
 
 #if os(macOS)
   
-  open class R0CollectionViewController<VV, UU: CollectionReusableView<VV>> : CollectionViewController<VV, UU> {
-    public var collectionView = CollectionView(empty: true)
-    
-    public typealias Shim = CollectionItemShim<VV, UU>
 
-    open func setup() {
-      fatalError("failed to override R0CollectionViewController.setup")
-    }
-    
-    public required init(with cellType: Shim.Type) {
-      super.init()
-      collectionView.delegate = self
-      collectionView.dataSource = self
-      
-      // *********************************************************************************
-      // THE DELEGATE, DATASOURCE, AND COLLECTIONVIEWLAYOUT MUST BE SET BEFORE REGISTERING
-      // *********************************************************************************
-      
-      collectionView.register(cellType)
-      setup()
-    }
-    
-    public required convenience init() {
-      self.init(with: Shim.self) // ("call init(on:, with:)")
-    }
-    
-    public required convenience init?(coder: NSCoder) {
-      fatalError("init?(coder:) not implemented")
-    }
-    
-    var lastBounds : CGRect = CGRect.zero
-
-    open override func viewWillLayout() {
-      super.viewWillLayout()
-      let z = collectionView.bounds
-      if z == lastBounds { return }
-      lastBounds = z
-      collectionView.invalidateLayout()
-    }
-    
-    // FIXME: should this be true or false?
-    open override func viewWillAppear() {
-      self.viewWillAppear(false) // I don't know if this should be true or false
-    }
-    
-    open func viewWillAppear(_ animated: Bool) { // just so I can have an override
-    }
-    
-  }
 #endif
 
 open class CollectionItemShim<UU, TT : CollectionReusableView<UU> > : CollectionViewCell {

@@ -7,7 +7,7 @@
 } */
   
   
-public class Transcript: R0CollectionViewController<NSAttributedString, MyCell>, CollectionViewDelegateFlowLayout {
+public class Transcript: CollectionViewController<NSAttributedString, MyCell>, CollectionViewDelegateFlowLayout {
   var lines: [NSAttributedString] = []
   var limit : Int = 1000
   
