@@ -1,9 +1,17 @@
 
 import CloudKit
 
+// FIXME:  I need to keep track of changed items which have not been synced
+// E.g. if there is a network failure when the change is made, I need to
+// queue up the changes for when the network is re-established.
+
 public class DataCache<T : DataModel> : NSObject {
   var _singleton : [String : T] = [:]
   public var rootID: CKRecordID!
+  
+  public subscript(index:String) -> T? {
+    get { return _singleton[index] }
+  }
   
   public func findShare(_ dbx : CKDatabase, _ zonid : CKRecordZoneID) {
     if let _ = rootID { return }
@@ -130,7 +138,7 @@ public class DataCache<T : DataModel> : NSObject {
   
   public func restoreFromFile() {
     _singleton = [String : T].decode(from: FileManager.default.contents(atPath: T.filename.path)) ?? [:]
-    // FIXME:  I need to create a notification that the model changed (everything)
+    // a notification that the model changed (everything)
     NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": "restoreAll"] ) )
   }
   
@@ -145,13 +153,11 @@ public class DataCache<T : DataModel> : NSObject {
       let k = v.getKey()
       let riq = _singleton.index(forKey: k) == nil
       _singleton[k] = v
-      // TODO: this should trigger a delayed save() -- but additional invocations should use the same delayed save()
-      
-      // this creates a notification so that views that depend on this model can update themselves
-      // FIXME:  if I could indicate whether it was an insert, delete, or update -- and what was being modified,
-      //         that would make view udpates smoother.
+
       self.save()
 
+      // this creates a notification so that views that depend on this model can update themselves
+      // the notification has information about whether it is an insert or a replace
       NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": (riq ? "insert" : "replace"), "key": k]) )
     }
   }
@@ -238,11 +244,6 @@ public class DataCache<T : DataModel> : NSObject {
     dbx.add(mro)
   }
   
-  // views which need to be notified up updates can use this.
-  public func watch(_ q : OperationQueue? = nil, using block: @escaping (Notification) -> Void) {
-    NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: T.name), object: nil, queue: q, using: block)
-  }
-  
   // FIXME: If I want to paste in data, get this working again.
   // NSPasteboardReading -------------------------------------------------------------------------------------
   /* public required init?(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
@@ -324,6 +325,14 @@ public protocol DataModel : Codable {
 // in order to support Playgrounds, I use a special filename in the Shared Playground Data folder
 // Somebody needs to put a copy of the required data into that folder, since Playgrounds cannot access CloudKit
 extension DataModel {
+  public static var values : [Self] {
+    return Array(base._singleton.values)
+  }
+  
+  public static var keys : [String] {
+    return Array(base._singleton.keys)
+  }
+  
   public static var filename : URL  { get {
     if Bundle.allBundles.contains(where: { ($0.bundleIdentifier ?? "").hasPrefix("com.apple.dt.") }) {
       return playgroundFilename
@@ -379,6 +388,15 @@ extension DataModel {
     
     // store this metadata on your local object
     self.encodedSystemFields = data as Data
+  }
+  
+  // views which need to be notified up updates can use this.
+  static public func watch(_ q : OperationQueue? = nil, using block: @escaping (Notification) -> Void) {
+    NotificationCenter.default.addObserver(forName: Notification.Name(rawValue: Self.name), object: nil, queue: q, using: block)
+  }
+
+  public func cache() {
+    Self.base.cache(self)
   }
 }
 

@@ -81,7 +81,6 @@
     public convenience init(frame: CGRect, collectionViewLayout: CollectionViewLayout) {
       self.init(frame: frame)
       self.collectionViewLayout = collectionViewLayout
-      self.collectionViewLayout = collectionViewLayout
     }
   }
   
