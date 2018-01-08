@@ -396,7 +396,7 @@ public class Stacker {
     return self
   }
   
-  public func end() {
+  @discardableResult public func end() -> View {
       // greaterThanOrEqualTo ?
     let p = prev == nil ? view : prev!
     if vert {
@@ -410,6 +410,7 @@ public class Stacker {
     pad = 0
     ins = 5
     cntr = false
+    return view
   }
 }
 
