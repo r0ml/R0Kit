@@ -689,7 +689,7 @@ extension View {
  
   public func addInto(_ view: View, with: [Constraint] =
     [.top, .bottom, .leading, .trailing]) {
-    let z = self.superview == nil ? self : self.superview!
+    let z = self // self.superview == nil ? self : self.superview!
     view.addSubview(z)
     z.fitInto(view.guide(insetBy: EdgeInsets() ), with: with)
   }

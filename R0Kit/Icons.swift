@@ -643,6 +643,26 @@ public class Icon {
     context.restoreGState()
   }
   
+  
+  static func draw_close(_ size: CGSize) {
+    let context = UIGraphicsGetCurrentContext()!
+    
+    context.scaleBy(x: size.width / 100, y: size.height / 100)
+      let path = BezierPath()
+      
+      path.lineWidth = lineWidth
+      path.lineCapStyle = .round
+      
+    path.move(to: CGPoint.zero)
+      path.addLine(to: CGPoint(x: 100, y: 100))
+      path.move(to: CGPoint(x: 100, y: 0))
+      path.addLine(to: CGPoint(x: 0, y: 100))
+      
+      lineColor.setStroke()
+      
+      path.stroke()
+    }
+  
   public static func draw_refresh(_ size : CGSize) {
     let context = UIGraphicsGetCurrentContext()!
     

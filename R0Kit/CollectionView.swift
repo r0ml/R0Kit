@@ -372,6 +372,15 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   open func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
     fatalError("forgot to override CollectionViewController.sizeForItemAt")
   }
+  
+  open func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+    return 2
+  }
+  
+  open func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+    return 2
+  }
+
 }
 
 // CollectionViewController
