@@ -1,5 +1,5 @@
 
-let textFont = Font(name: "Garamond", size: 14)!
+let textFont = Font(name: "Utopia Std", size: 14)!
 
 public class TagFieldController : CollectionViewController<String, TagView>, CollectionViewDelegateFlowLayout {
   var _tags = [String]()
@@ -12,7 +12,7 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     view = collectionView
     // FIXME: calculate my size?
     view.heightAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
-    view.myLayer.backgroundColor = Color.systemPink.cgColor
+    view.myLayer.backgroundColor = Color.purple.cgColor
     
     // FIXME: I do this because when the scrolling of the superview begins -- the contents
     // of this collectionview shift slightly.  I don't know why or how to prevent that.
@@ -101,8 +101,6 @@ public class TagView : CollectionReusableView<String> {
   override public func setup() {
     lab.myLayer.backgroundColor = Color.orange.cgColor
     lab.font = textFont
-    
-    lab.usesSingleLineMode = true // ??
     lab.addInto(self)
   }
   
