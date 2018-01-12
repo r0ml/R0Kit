@@ -316,7 +316,9 @@ extension View {
 // ====================================================================================================
 
 extension View {
-  public func stacker(vertical : Bool = false) -> Stacker { return Stacker(self, vertical: vertical) }
+  public func stacker(vertical : Bool = false) -> Stacker {
+    self.translatesAutoresizingMaskIntoConstraints = false
+    return Stacker(self, vertical: vertical) }
 }
 
 infix operator ~ : AdditionPrecedence
@@ -337,11 +339,17 @@ public class Stacker {
   var cntr : Bool = false
   var vert : Bool
   var ins : CGFloat = 5
+  var pct : CGFloat = 0
   
   init(_ v : View, vertical : Bool) { view = v; vert = vertical }
   
   @discardableResult public func pad(_ p : CGFloat) -> Stacker {
     pad = p
+    return self
+  }
+  
+  @discardableResult public func spread(_ p : CGFloat) -> Stacker {
+    pct = p
     return self
   }
   
@@ -382,14 +390,30 @@ public class Stacker {
         v.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
       } else {
         v.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ins).isActive = true
-        v.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -2 * ins).isActive = true
+      }
+      v.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -2 * ins).isActive = true
+
+      if pct != 0 {
+         v.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: pct, constant: -2 * pad).isActive = true
+      } else {
+        let vz = v.intrinsicContentSize
+        // FIXME:  This breaks the Swatch selector -- but if I can find a better way,
+        // I should use that -- this constraint conflicts with height==width
+        if vz.height > 0 && v.classForCoder == Label.self {
+          v.heightAnchor.constraint(equalToConstant: vz.height).isActive = true
+        }
       }
     } else {
       if cntr {
         v.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
       } else {
         v.topAnchor.constraint(equalTo: view.topAnchor, constant: ins).isActive = true
-        v.heightAnchor.constraint(equalTo: view.heightAnchor, constant: -2 * ins).isActive = true
+      }
+      v.heightAnchor.constraint(equalTo: view.heightAnchor, constant: -2 * ins).isActive = true
+      if pct != 0 {
+        v.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: pct, constant: -2 * pad).isActive = true
+      } else {
+        // FIXME:
       }
     }
     prev = v
@@ -398,16 +422,18 @@ public class Stacker {
   
   @discardableResult public func end() -> View {
       // greaterThanOrEqualTo ?
+    
     let p = prev == nil ? view : prev!
     if vert {
-       //  p.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -pad).isActive = true
-      p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
+      p.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -pad).isActive = true
+      // p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
     } else {
-       //  p.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -pad).isActive = true
-      p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
+      p.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -pad).isActive = true
+      // p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
     }
     prev = nil
     pad = 0
+    pct = 0
     ins = 5
     cntr = false
     return view
@@ -438,10 +464,28 @@ public class Stacker {
 
 public class HideableView<T : View> : View {
   public let innerView : T
+  
+  /*public var zconst = [NSLayoutConstraint]()
+  public var xconst = [NSLayoutConstraint]()
+  public var yconst = [NSLayoutConstraint]()
+  */
+  
   public init(_ view : T) {
     self.innerView = view
     super.init(frame: CGRect.zero)
     innerView.addInto(self)
+    
+    /*self.xconst = self.constraints
+    self.yconst = innerView.constraints
+    
+    self.zconst = [
+      // FIXME: None of this seems to work right
+      // self.widthAnchor.constraint(equalToConstant: 0),
+      self.heightAnchor.constraint(equalToConstant: 0)
+      // innerView.widthAnchor.constraint(equalToConstant: 0),
+      // innerView.heightAnchor.constraint(equalToConstant: 0)
+    ]
+    self.constraints.forEach { $0.priority = UILayoutPriority(rawValue: Float(min(999, Int($0.priority.rawValue)))) } */
   }
   
   public required init(coder: NSCoder) {
@@ -449,17 +493,28 @@ public class HideableView<T : View> : View {
   }
   
   public var makeHidden : Bool { get {
-      print("ask is hidden")
       return innerView.isHidden
     }
     set {
       if newValue {
         innerView.isHidden = true
+        /*self.yconst.forEach { $0.isActive = false }
+        self.xconst.forEach { $0.isActive = false }
+         */
+        // zconst.forEach { $0.isActive = true }
+
+        
         innerView.removeFromSuperview()
-        let cc = self.constraints.filter { if let j = $0.secondItem as? View, j == self { return true } else { return false }}
-        self.removeConstraints(cc)
+        
+        /*let cc = self.constraints.filter { if let j = $0.secondItem as? View, j == self { return true } else { return false }}
+        self.removeConstraints(cc)*/
+        
       } else {
+        
         innerView.isHidden = false
+       // zconst.forEach { $0.isActive = false }
+       /* xconst.forEach { $0.isActive = true }
+        yconst.forEach { $0.isActive = true }*/
         innerView.addInto(self)
       }
     }

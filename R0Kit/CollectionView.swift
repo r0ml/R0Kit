@@ -396,10 +396,10 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
 open class CollectionItemShim<UU, TT : CollectionReusableView<UU> > : CollectionViewCell {
   open class var identifier : String { return TT.identifier }
   
-  var itemView: TT
+  public var itemView: TT
   
   public required init(frame: CGRect) {
-    itemView = TT()
+    itemView = TT(frame: frame)
     super.init(frame: frame)
     // ***** DON'T FORGET THIS, OR NOTHING WIL SHOW UP ***
     itemView.addInto(self.contentView)

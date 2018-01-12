@@ -158,6 +158,9 @@ public class DataCache<T : DataModel> : NSObject {
 
       // this creates a notification so that views that depend on this model can update themselves
       // the notification has information about whether it is an insert or a replace
+     
+      // FIXME: As was done with save, this should be a deferred notification
+      // which might collect a second's worth of updates into a batch
       NotificationCenter.default.post( Notification( name: Notification.Name(rawValue: T.name), object: nil, userInfo: ["updateType": (riq ? "insert" : "replace"), "key": k]) )
     }
   }

@@ -1,26 +1,60 @@
 
 let textFont = Font(name: "Utopia Std", size: 14)!
 
+class LD : NSObject, CALayerDelegate {
+  public func draw(_ layer: CALayer, in ctx: CGContext) {
+    ctx.setFillColor(Color.yellow.cgColor);
+    ctx.fill(layer.bounds);
+  }
+}
 public class TagFieldController : CollectionViewController<String, TagView>, CollectionViewDelegateFlowLayout {
   var _tags = [String]()
   public var tags : [String] {
     get { return _tags }
-    set { _tags = newValue; self.collectionView.reloadData(); self.collectionView.setNeedsLayout(); self.collectionView.needsDisplay = true }
+    set { _tags = newValue; self.collectionView.reloadData()
+      self.collectionView.setNeedsLayout()
+      // self.collectionView.myLayer.delegate = LD()
+      // self.collectionView.myLayer.setNeedsDisplay()
+    }
+  }
+  
+  convenience public init(tags ts : Set<String>) {
+    self.init()
+    tags = Array(ts)
+  }
+  
+  public func intrinsicContentSize(_ s : CGSize) -> CGSize {
+    #if os(macOS)
+      self.collectionView.setFrameSize(s)
+      let ss = self.collectionView.collectionViewLayout!.collectionViewContentSize
+    #elseif os(iOS)
+      self.collectionView.bounds = CGRect(origin: CGPoint.zero, size: s)
+      let ss = self.collectionView.collectionViewLayout.collectionViewContentSize
+    #endif
+    return ss
   }
   
   override public func setup() {
     view = collectionView
-    // FIXME: calculate my size?
-    view.heightAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
-    view.myLayer.backgroundColor = Color.purple.cgColor
     
+    #if os(iOS)
+      view.setTransparentBackground()
+      #endif
+    
+    collectionView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+    
+    // view.myLayer.backgroundColor = Color.purple.cgColor
+
     // FIXME: I do this because when the scrolling of the superview begins -- the contents
     // of this collectionview shift slightly.  I don't know why or how to prevent that.
     // this prevents the right edge of the slightly shifted collection view from being clipped.
     // The shifting happens the first time the view is scrolled, but then remains that way.
     // So something about the pre-scrolled view is wrong?
     // Perhaps this can be fixed by coercing a scroll?
-    view.myLayer.masksToBounds = false
+    
+    // view.myLayer.masksToBounds = false
+    
+    // FIXME: calculate my size
     
   }
   
@@ -61,6 +95,8 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     // FIXME: I did this in order to round to the nearest integer in case this was causing
     // the minor shift of the collection items.
     size.width = floor(size.width + 1)
+    
+    // return CGSize(width: 100, height: 20)
     return size
   }
   
@@ -99,8 +135,9 @@ public class TagView : CollectionReusableView<String> {
   } */
   
   override public func setup() {
-    lab.myLayer.backgroundColor = Color.orange.cgColor
+    // lab.myLayer.backgroundColor = Color.orange.cgColor
     lab.font = textFont
+    self.translatesAutoresizingMaskIntoConstraints = false
     lab.addInto(self)
   }
   
@@ -109,7 +146,7 @@ public class TagView : CollectionReusableView<String> {
   }
   
   public override func prepareForReuse() {
-    lab.text = ""
+    lab.text = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   }
   
 }

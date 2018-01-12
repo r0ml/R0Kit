@@ -681,7 +681,7 @@ extension View {
  
   public func addInto(guide: LayoutGuide, with: [Constraint] = [.top, .bottom, .leading, .trailing] ) {
     if let ov = guide.owningView {
-      let z = self.superview == nil ? self : self.superview!
+      let z = self // .superview == nil ? self : self.superview!
       ov.addSubview(z)
       z.fitInto(guide, with: with)
     }
