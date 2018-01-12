@@ -158,8 +158,13 @@
     }
 */
     
-  }
   
+  public func forCell<U, T : CollectionReusableView<U> >(at indexPath: IndexPath, do fn: @escaping (T) -> Void) {
+    let c : CollectionItemShim<U,T> = self.item(at: indexPath) as! CollectionItemShim<U, T>
+    fn(c.itemView)
+  }
+  }
+
 #elseif os(iOS)
   extension CollectionView {
     public func makeCell<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> CollectionItemShim<U,T> {
@@ -171,6 +176,10 @@
       return CollectionItemShim<U,T>()
     }
     
+    public func forCell<U, T : CollectionReusableView<U> >(at indexPath: IndexPath, fn do: @escaping (T) -> Void) {
+      let c : CollectionItemShim<U,T> = self.item(at: indexPath)
+      fn(c.itemView)
+    }
   /*  public func makeSupplementary<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> CollectionItemShim<U,T> {
     if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? CollectionItemShim<U,T> {
       fn(cell.itemView)
@@ -236,7 +245,22 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     fatalError("init?(coder:) not implemented")
   }
   
+  public func reloadData() {
+    (self.view as! CollectionView).reloadData()
+  }
 
+  public var itemsAreSelectable : Bool {
+      get { return (self.view as! CollectionView).isSelectable }
+      set { (self.view as! CollectionView).isSelectable = newValue }
+}
+/*
+    #elseif os(iOS)
+      get { return true }
+      set { }
+    #endif
+  }*/
+  
+  
   #if os(macOS)
 
   var lastBounds : CGRect = CGRect.zero
@@ -270,11 +294,6 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     public static func addToMenu() {
     }
   
-  public func collectionView(_ collectionView : CollectionView,
-                             cellForItemAt indexPath: IndexPath) -> CollectionViewItem {
-    return self.collectionView(cellForItemAt: indexPath, in: collectionView)
-  }
-  
   /*
   public func supplementaryHeader<Y, Z : CollectionReusableView<Y>>(_ fn: @escaping (Z, IndexPath) -> Void) {
   
@@ -300,6 +319,13 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   open func collectionView(cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> CollectionItemShim<U, T> {
     return collectionView.makeCell(indexPath) { (T) -> Void in }
   }
+  
+  public func collectionView(_ collectionView : CollectionView,
+                             cellForItemAt indexPath: IndexPath) -> CollectionViewItem {
+    return self.collectionView(cellForItemAt: indexPath, in: collectionView)
+  }
+  
+
   
   #if os(macOS)
   open func collectionView(_ collectionView: CollectionView, viewForSupplementaryElementOfKind kind: CollectionView.SupplementaryElementKind, at indexPath: IndexPath) -> View {
@@ -380,6 +406,10 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   open func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
     return 2
+  }
+
+  open func collectionView(_ collectionView: CollectionView, didChangeItemsAt indexPaths: Set<IndexPath>, to highlightState: NSCollectionViewItem.HighlightState) {
+    print("forgot to override CollectionViewController didChangeItemsAt:highglightState:")
   }
 
 }

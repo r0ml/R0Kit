@@ -86,7 +86,7 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
    // } else {
    //   print("sizeForItemAt: indexPath: \(indexPath.item), tags.count = \(self.tags.count)")
    // }
-    var size = tags[indexPath.item].size(withAttributes: [NSAttributedStringKey.font: textFont]) ?? CGSize.zero
+    var size = tags[indexPath.item].size(withAttributes: [NSAttributedStringKey.font: textFont])
 
     // FIXME:  Don't know why this 4
     size.width += 4
