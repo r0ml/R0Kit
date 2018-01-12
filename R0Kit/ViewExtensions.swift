@@ -48,6 +48,9 @@ public class Stacker {
     return self
   }
   
+  /** Add a view to the stack */
+  // TODO: If the view is a HideableView, automatically remove the pad?
+  // HideableViews would need to embed a "when I'm visible this is my padding" parameter
   @discardableResult public func view(_ v : View) -> Stacker {
     view.addSubview(v)
     v.translatesAutoresizingMaskIntoConstraints = false
