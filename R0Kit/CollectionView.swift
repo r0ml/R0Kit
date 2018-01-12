@@ -385,12 +385,67 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
 
 // CollectionViewController
 #if os(iOS)
+  open class CollectionReusableView<T> : UICollectionReusableView {
+    // private var representedObject : T // since the view is reusable, this has to be modifiable
+    open func setRepresentedObject(_ x: T) {
+      // representedObject = x
+      fatalError("subclass did not override setRepresentedObject")
+    }
+    
+    override public required init(frame: CGRect) {
+      super.init(frame: frame)
+      self.setup()
+    }
+    
+    public required init?(coder: NSCoder) {
+      super.init(coder: coder)
+    }
+    
+    open func setup() {
+      fatalError("failed to override CollectionReusableView.setup")
+    }
+    
+    open class var identifier : String { return String(describing: T.self) }
+    
+  }
 
+#elseif os(macOS)
+  
+  open class CollectionReusableView<T> : View {
+    open class var identifier : String { return String(describing: T.self) }
+    
+    public var R0Class : T.Type { return T.self }
+    
+    // private var representedObject : T?
+    open func setRepresentedObject(_ x: T) {
+      fatalError("subclass did not override setRepresentedObject")
+    }
+    
+    public override required init(frame: CGRect) {
+      super.init(frame: frame)
+      self.setup()
+    }
+    
+    public required init?(coder: NSCoder) {
+      super.init(coder: coder)
+    }
+    
+    open func setup() {
+      fatalError("failed to override CollectionReusableView.setup")
+    }
+  }
 #endif
+
 
 #if os(macOS)
   
-
+  extension CollectionView {
+    public func performBatchUpdates(_ updates: (() -> Void)?,
+                                    completion: ((Bool) -> Void)? = nil) {
+      self.performBatchUpdates(updates, completionHandler: completion)
+    }
+  }
+  
 #endif
 
 open class CollectionItemShim<UU, TT : CollectionReusableView<UU> > : CollectionViewCell {

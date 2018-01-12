@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E721DF5820088E140086B9CD /* UIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E721DF5720088E140086B9CD /* UIExtensions.swift */; };
+		E721DF5A2008921F0086B9CD /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E721DF592008921F0086B9CD /* ViewExtensions.swift */; };
 		E73873FB1FC9F9B8009C3C28 /* HTMLEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */; };
 		E73873FD1FC9F9C6009C3C28 /* HTMLDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73873FC1FC9F9C6009C3C28 /* HTMLDecoder.swift */; };
 		E73C6FED1FBFD05D009B0D7F /* RecordDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73C6FEC1FBFD05D009B0D7F /* RecordDecoder.swift */; };
@@ -37,6 +39,8 @@
 
 /* Begin PBXFileReference section */
 		E701E0811FDBAC87006FE884 /* R0Kit.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = R0Kit.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		E721DF5720088E140086B9CD /* UIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIExtensions.swift; sourceTree = "<group>"; };
+		E721DF592008921F0086B9CD /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLEncoder.swift; sourceTree = "<group>"; };
 		E73873FC1FC9F9C6009C3C28 /* HTMLDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLDecoder.swift; sourceTree = "<group>"; };
 		E73C6FEC1FBFD05D009B0D7F /* RecordDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordDecoder.swift; sourceTree = "<group>"; };
@@ -121,7 +125,9 @@
 				E79E52AA1FBFA1E500FCAD98 /* TagListView.swift */,
 				E7CD96EA1FD9E01C0098D603 /* CollectionView.swift */,
 				E79E52AC1FBFA1E500FCAD98 /* XUI.swift */,
+				E721DF592008921F0086B9CD /* ViewExtensions.swift */,
 				E79E52A81FBFA1E400FCAD98 /* XOS.swift */,
+				E721DF5720088E140086B9CD /* UIExtensions.swift */,
 				E79E52A91FBFA1E400FCAD98 /* Xnet.swift */,
 				E7492C1B1FD0AD3C001E60AF /* Icons.swift */,
 				E79E52AB1FBFA1E500FCAD98 /* Cloud.swift */,
@@ -281,12 +287,14 @@
 				E7492C1C1FD0AD3C001E60AF /* Icons.swift in Sources */,
 				E79E52B11FBFA1E600FCAD98 /* TagListView.swift in Sources */,
 				E7CD96EB1FD9E01C0098D603 /* CollectionView.swift in Sources */,
+				E721DF5820088E140086B9CD /* UIExtensions.swift in Sources */,
 				E73873FB1FC9F9B8009C3C28 /* HTMLEncoder.swift in Sources */,
 				E79E52B21FBFA1E600FCAD98 /* Cloud.swift in Sources */,
 				E79E52B01FBFA1E600FCAD98 /* Xnet.swift in Sources */,
 				E73873FD1FC9F9C6009C3C28 /* HTMLDecoder.swift in Sources */,
 				E79E52B31FBFA1E600FCAD98 /* XUI.swift in Sources */,
 				E79E52AE1FBFA1E600FCAD98 /* Photos.swift in Sources */,
+				E721DF5A2008921F0086B9CD /* ViewExtensions.swift in Sources */,
 				E73C6FED1FBFD05D009B0D7F /* RecordDecoder.swift in Sources */,
 				E79E52B61FBFA21300FCAD98 /* DataModel.swift in Sources */,
 				E79E52AF1FBFA1E600FCAD98 /* XOS.swift in Sources */,

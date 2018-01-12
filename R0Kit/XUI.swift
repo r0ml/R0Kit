@@ -1,6 +1,174 @@
 
-import CommonCrypto
 
+#if os(iOS)
+  @_exported import UIKit
+  
+  public typealias Responder = UIResponder
+  public typealias Image = UIImage
+  public typealias Color = UIColor
+  public typealias ImageView = UIImageView
+  public typealias View = UIView
+  public typealias BezierPath = UIBezierPath
+  public typealias Font = UIFont
+  
+  public typealias Event = UIEvent
+  
+  public typealias EdgeInsets = UIEdgeInsets
+  public typealias LayoutGuide = UILayoutGuide
+  public typealias ScrollView = UIScrollView
+  
+  public typealias TextField = UITextField
+  public typealias TextView = UITextView
+  public typealias TextViewDelegate = UITextViewDelegate
+  
+  public typealias TableView = UITableView
+  public typealias TableViewDelegate = UITableViewDelegate
+  public typealias TableViewDataSource = UITableViewDataSource
+  
+  public typealias GestureRecognizer = UIGestureRecognizer
+  
+  public typealias ClickGestureRecognizer = UITapGestureRecognizer
+  public typealias PressGestureRecognizer = UILongPressGestureRecognizer
+  
+#elseif os(macOS)
+  @_exported import AppKit
+  
+  public typealias Responder = NSResponder
+  public typealias Image = NSImage
+  public typealias Color = NSColor
+  public typealias ImageView = NSImageView
+  public typealias View = NSView
+  public typealias BezierPath = NSBezierPath
+  public typealias Font = NSFont
+  
+  public typealias Event = NSEvent
+  
+  public typealias EdgeInsets = NSEdgeInsets
+  public typealias LayoutGuide = NSLayoutGuide
+  public typealias ScrollView = NSScrollView
+  
+  public typealias TextField = NSTextField
+  public typealias TextView = NSTextView
+  public typealias TextViewDelegate = NSTextViewDelegate
+  
+  public typealias TableView = NSTableView
+  public typealias TableViewDelegate = NSTableViewDelegate
+  public typealias TableViewDataSource = NSTableViewDataSource
+  
+  public typealias GestureRecognizer = NSGestureRecognizer
+  public typealias ClickGestureRecognizer = NSClickGestureRecognizer
+  public typealias PressGestureRecognizer = NSPressGestureRecognizer
+  
+#endif
+
+#if os(iOS)
+  
+  public typealias TapGestureRecognizer = UITapGestureRecognizer
+  public typealias SwipeGestureRecognizer = UISwipeGestureRecognizer
+  public typealias PanGestureRecognizer = UISwipeGestureRecognizer
+  public typealias RotationGestureRecognizer = UIRotationGestureRecognizer
+  public typealias ZoomGestureRecognizer = UIPinchGestureRecognizer
+  
+#elseif os(macOS)
+  
+  public typealias TapGestureRecognizer = NSClickGestureRecognizer
+  public typealias SwipeGestureRecognizer = NSPanGestureRecognizer
+  public typealias PanGestureRecognizer = NSPanGestureRecognizer
+  public typealias RotationGestureRecognizer = NSRotationGestureRecognizer
+  public typealias ZoomGestureRecognizer = NSMagnificationGestureRecognizer
+  
+#endif
+
+// =============================== UIDevice ==================================
+#if os(iOS)
+  extension UIDevice {
+    /** This can be used to determine if this code is running in the simulator
+     It is an alternative to #ifdef'ing simulator specific code */
+    #if (arch(i386) || arch(x86_64))
+    public static let isSimulator = true
+    #else
+    public static let isSimulator = false
+    #endif
+  }
+  
+#elseif os(macOS)
+  /** This can be used to determine if this code is running in the simulator
+   It is an alternative to #ifdef'ing simulator specific code */
+  public class UIDevice {
+    public static let isSimulator: Bool = false
+  }
+#endif
+
+// ============================= Label ===================================
+
+#if os(iOS)
+  public typealias Label = UILabel
+  
+#elseif os(macOS)
+  /** A subclass of TextField to create a read-only text control.
+      This is meant to be identical to UILabel */
+  open class Label : TextField {
+    required override public init(frame: CGRect) {
+      super.init(frame: frame)
+      self.isEditable = false
+      self.isBordered = false
+      self.setTransparentBackground()
+    }
+    
+    /** This is not implemented and should not be used */
+    public required init?(coder: NSCoder) {
+      super.init(coder: coder)
+    }
+    
+    /** Match the name (maximumNumberOfLines) to iOS */
+    public var numberOfLines : Int {
+      get { return maximumNumberOfLines }
+      set { maximumNumberOfLines = newValue }
+    }
+    
+    /** Match the name (alignment) to iOS */
+    public var textAlignment : NSTextAlignment {
+      get { return alignment }
+      set { alignment = newValue }
+    }
+    
+  }
+#endif
+
+// ============================= ImageView ===============================
+
+#if os(iOS)
+  public extension ImageView {
+    /** scale the image while maintaing aspect ratio */
+    public func scaleMe() {
+      self.contentMode = .scaleAspectFit
+    }
+  }
+
+#elseif os(macOS)
+  
+  public extension ImageView {
+    /** scale the image while retaining aspect ratio */
+    public func scaleMe() {
+      self.imageScaling = .scaleProportionallyUpOrDown
+    }
+  }
+  
+#endif
+
+// ============================= UIControl ===============================
+
+// FIXME:  The use case of this is ifdef'd.  Move the ifdef in here.
+#if os(iOS)
+  extension UIControl {
+    public func addTarget( for forevent: UIControlEvents, _ fn: @escaping (AnyObject?)->Void ) -> Void {
+      let x = ClosX(fn)
+      addTarget(x, action: x.selector, for: forevent)
+    }
+  }
+#endif
+
+// =============================
 #if os(iOS)
   public class XR : NSObject {
     var fn : (()->Void)? = nil
@@ -14,19 +182,105 @@ import CommonCrypto
       fng?(x as! UIGestureRecognizer)
     }
   }
+  
+  extension UITextView {
+    open var myTextContainer: NSTextContainer {
+      get { return self.textContainer }
+    }
+  }
+  
+  
+  
+  extension UIBarButtonItem {
+    public convenience init(title: String, _ fn : @escaping (AnyObject?) -> Void) {
+      let t = ClosX(fn)
+      self.init(title: title, style: .plain, target: t, action: t.selector)
+    }
+  }
+  
+  public class Button : UIButton {
+    // public var draggable : Draggable.Type?
+    public func setAttributedTitle(_ str : NSAttributedString) {
+      self.setAttributedTitle(str, for: .normal)
+    }
+    
+  }
+  
+  public protocol  Draggable : AnyObject {
+    //  static func doDrop(_ pb : NSPasteboard) -> Bool
+    //  static var types : [NSPasteboard.PasteboardType] {
+    //    get
+    //  }
+  }
+  
+  
+  public extension UIImage {
+    public var pngData: Data? {
+      return UIImagePNGRepresentation(self)
+    }
+    
+    public static func from(bundle: Bundle, named: String) -> UIImage? {
+      return Image.init(named: named, in: bundle, compatibleWith: nil)
+    }
+    
+    func scaledTo(_ newSize:CGSize? = nil) -> Image {
+      if let newSize = newSize {
+        let ow = self.size.width
+        let oh = self.size.height
+        let nw = newSize.width == 0 ? ow : newSize.width
+        let nh = newSize.height == 0 ? oh : newSize.height
+        
+        let sf = min(1, min(nw/ow, nh/oh))
+        
+        let cw = sf * ow
+        let ch = sf * oh
+        
+        UIGraphicsBeginImageContextWithOptions(CGSize(width: cw, height: ch), false, 0.0);
+        self.draw(in: CGRect(origin: CGPoint.zero, size: CGSize(width: cw, height: ch)))
+        let newImage:UIImage = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        return newImage
+      } else {
+        return self
+      }
+    }
+    
+    func flipped() -> Image {
+      return Image.init(cgImage: self.cgImage!, scale: 1.0, orientation: UIImageOrientation.upMirrored)
+    }
+  }
+  
+  extension View {
+    
+    open var myLayer: CALayer {
+      get { return self.layer }
+    }
+    
+    open var needsDisplay : Bool {
+      get { return false }
+      set { self.setNeedsDisplay() }
+    }
+    
+    open func setTransparentBackground() {
+      self.backgroundColor = Color.clear
+    }
+    
+  }
+  
+  open class ViewController : UIViewController {
+    public required init() {
+      super.init(nibName: nil, bundle: nil)
+    }
+    
+    required public init?(coder aDecoder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+    
+  }
+  
+
 #endif
   
-extension Encodable {
-  public func encode(with encoder: JSONEncoder = JSONEncoder()) -> Data? {
-    return try? encoder.encode(self)
-  }
-}
-
-extension Decodable {
-  public static func decode(with decoder: JSONDecoder = JSONDecoder(), from data: Data?) -> Self? {
-    return data.flatMap { try? decoder.decode(Self.self, from: $0) }
-  }
-}
 
 public class ClosX : NSObject {
   // I need to hang on to the objs to keep them for the ObjC machinery.
@@ -47,77 +301,6 @@ extension GestureRecognizer {
   }
 }
 
-extension Data {
-  public func md5() -> Data {
-    var digest = Array<UInt8>(repeating:0, count:Int(CC_MD5_DIGEST_LENGTH))
-    let _ = self.withUnsafeBytes { bytes in
-      CC_MD5(bytes, CC_LONG(self.count), &digest)
-    }
-    return Data(bytes: digest)
-  }
-}
-
-extension Color {
-  public convenience init(hex: UInt32) {
-    let f = { (x:UInt32,y:Int) in CGFloat( (x >> y) & 0xff) / 255.0 }
-    self.init(red: f(hex, 16) , green: f(hex, 8), blue: f(hex, 0), alpha: 1)
-  }
-}
-
-extension CGPoint {
-  public static func +(a:CGPoint, b:CGPoint) -> CGPoint {
-    return CGPoint(x: a.x+b.x, y: a.y+b.y)
-  }
-}
-
-extension Notification.Name {
-  public static let statusUpdate = Notification.Name(rawValue: "statusUpdate" )
-  public static let errorReport = Notification.Name(rawValue: "errorReport" )
-}
-
-extension Notification {
-  public static func statusUpdate(_ m : String) {
-    os_log("%@", type: .info, m)
-    let noti = Notification( name: .statusUpdate, object: nil, userInfo: ["msg":m])
-    NotificationCenter.default.post(noti)
-  }
-  
-  public static func errorReport(_ m : String, _ err : Error?) {
-    if let e = err {
-      os_log("%@: %@", type: .error, m, e.localizedDescription)
-      var mmm = e.localizedDescription
-      if let ee = e as? CKError {
-        if let mm = ee.userInfo["NSUnderlyingError"] as? NSError {
-          mmm = mm.localizedDescription
-        }
-        
-      }
-      let noti = Notification( name: .errorReport, object: nil, userInfo: ["msg":m, "err": mmm])
-      NotificationCenter.default.post(noti)
-    }
-  }
-  public static func errorReport(_ m : String, _ e : String) {
-    let noti = Notification( name: .errorReport, object: nil, userInfo: ["msg":m, "err": e])
-    NotificationCenter.default.post(noti)
-  }
-  
-  public static func registerStatus(_ tf : Label) {
-    NotificationCenter.default.addObserver(forName: Notification.Name.statusUpdate, object: nil, queue: nil) { noti in
-      DispatchQueue.main.async {
-        tf.textColor = Color.gray
-        tf.text = noti.userInfo?["msg"] as? String }
-    }
-  }
-  
-  public static func registerError(_ tf : Label) {
-    NotificationCenter.default.addObserver(forName: Notification.Name.errorReport, object: nil, queue: nil) { noti in
-      DispatchQueue.main.async {
-        tf.textColor = Color.red
-        tf.text = "\(noti.userInfo?["msg"] as? String ?? "") error: \(noti.userInfo?["err"] as? String ?? "unknown")"
-      }
-    }
-  }
-}
 
 // -----------------------------------------------------------------------------
 
@@ -163,6 +346,250 @@ extension Notification {
     }
     print("done")
   }
+  
+
+  
+  extension NSMenuItem {
+    public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping (AnyObject?) -> Void) -> NSMenuItem {
+      let x = ClosX(fn)
+      let nmi = NSMenuItem(title: withTitle, action: x.selector, keyEquivalent: keyEquivalent)
+      nmi.target = x
+      return nmi
+    }
+  }
+  
+  extension View {
+    
+    open var myLayer: CALayer {
+      get { self.wantsLayer = true; return self.layer! }
+      set { self.layer = newValue }
+    }
+    
+    public var backgroundColor : NSColor? {
+      get { if let cg = self.layer?.backgroundColor { return NSColor(cgColor: cg) } else { return nil } }
+      set { self.wantsLayer = true;  self.layer?.backgroundColor = newValue?.cgColor }
+    }
+    
+    public var isOpaque : Bool {
+      get { return self.layer?.isOpaque == true }
+      set { self.wantsLayer = true; self.layer?.isOpaque = newValue }
+    }
+    
+    public func setNeedsLayout() {
+      self.needsLayout = true
+    }
+    
+    public var alpha : CGFloat {
+      get { return self.alphaValue }
+      set { self.alphaValue = newValue }
+    }
+    
+    /* public func setTransparentBackground() {
+     // self.drawsBackground = false
+     self.backgroundColor = Color.clear
+     }*/
+  }
+  
+  extension TextField {
+    public var text : String? {
+      get {
+        return self.stringValue
+      }
+      set {
+        self.stringValue = newValue ?? ""
+      }
+    }
+    
+    public var attributedText : NSAttributedString? {
+      get {
+        return self.attributedStringValue
+      }
+      set {
+        self.attributedStringValue = newValue ?? NSAttributedString()
+      }
+    }
+  }
+  
+  extension TextView {
+    public var text : String {
+      get {
+        return self.string
+      }
+      set {
+        self.string = newValue
+      }
+    }
+    
+    open var myTextContainer: NSTextContainer {
+      get { return self.textContainer! }
+      set { self.textContainer = newValue }
+    }
+    
+    public var textAlignment : NSTextAlignment {
+      get { return alignment }
+      set { alignment = newValue }
+    }
+    
+  }
+  
+  // FIXME: This only exists for Transcript.
+  // Change Transcript to use CollectionView -- then this won't be needed
+  extension TableView {
+    // this presumes that there is no "section" in the table
+    public func deleteRows(at: [IndexPath], with: TableView.AnimationOptions) {
+      var z = IndexSet()
+      at.forEach { z.insert($0.item ) }
+      return removeRows(at: z, withAnimation: with)
+    }
+    
+    // this presumes that there is no "section" in the table
+    public func insertRows(at: [IndexPath], with: TableView.AnimationOptions) {
+      var z = IndexSet()
+      at.forEach { z.insert($0.item ) }
+      return insertRows(at: z, withAnimation: with)
+    }
+    
+  }
+  
+  extension Font {
+    public static func italicSystemFont(ofSize : CGFloat) -> Font {
+      return Font.systemFont(ofSize: ofSize)
+    }
+  }
+  
+  open class ViewController : NSViewController {
+    open func viewWillLayoutSubviews() {
+      self.viewWillLayout()
+    }
+    
+    public required init() {
+      super.init(nibName: nil, bundle: nil)
+    }
+    
+    required public init?(coder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+  }
+  
+  
+  extension ScrollView {
+    public var showsVerticalScrollIndicator : Bool {
+      get { return hasVerticalScroller }
+      set { hasVerticalScroller = newValue }
+    }
+    public var showsHorizontalScrollIndicator : Bool {
+      get { return hasHorizontalScroller }
+      set { hasHorizontalScroller = newValue }
+    }
+    
+    
+    public var contentInset : NSEdgeInsets {
+      get { return self.contentInsets }
+    }
+  }
+  
+
+  
+  extension TextField {
+    public func setTransparentBackground() {
+      self.drawsBackground = false
+    }
+  }
+  
+  extension TextView {
+    public func setTransparentBackground() {
+      self.drawsBackground = false
+    }
+  }
+  
+  public protocol Draggable : AnyObject /*, NSPasteboardReading */ {
+    static func doDrop(_ pb : NSPasteboard) -> Bool
+    static var types : [NSPasteboard.PasteboardType] {
+      get
+    }
+  }
+  
+  public class Button : NSButton {
+    public var draggable : Draggable.Type?
+    
+    public func setAttributedTitle(_ str : NSAttributedString) {
+      self.attributedTitle = str
+    }
+  }
+  
+  public extension NSImage {
+    public convenience init?(named: String) {
+      self.init(named: NSImage.Name(rawValue: named))
+    }
+    
+    public static func from(bundle: Bundle, named: String) -> NSImage? {
+      return bundle.image(forResource: NSImage.Name.init(rawValue: named))
+    }
+    
+    public var pngData: Data? {
+      guard let tiffRepresentation = tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffRepresentation) else { return nil }
+      return bitmapImage.representation(using: .png, properties: [:])
+    }
+    
+    func pngWrite(to url: URL, options: Data.WritingOptions = .atomic) -> Bool {
+      do {
+        try pngData?.write(to: url, options: options)
+        return true
+      } catch {
+        os_log("pngWrite: %@", error.localizedDescription)
+        return false
+      }
+    }
+    
+    func scaledTo(_ newSize:CGSize? = nil) -> Image {
+      if let newSize = newSize {
+        let ow = self.size.width
+        let oh = self.size.height
+        let nw = newSize.width == 0 ? ow : newSize.width
+        let nh = newSize.height == 0 ? oh : newSize.height
+        
+        let sf = min(1, min(nw/ow, nh/oh))
+        
+        let cw = sf * ow
+        let ch = sf * oh
+        
+        if let bitmapRep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(cw), pixelsHigh: Int(ch), bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: NSColorSpaceName.calibratedRGB, bytesPerRow: 0, bitsPerPixel: 0) {
+          bitmapRep.size = newSize
+          NSGraphicsContext.saveGraphicsState()
+          NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmapRep)
+          self.draw(in: NSRect(x: 0, y: 0, width: cw, height: ch), from: NSZeroRect, operation: .copy, fraction: 1.0)
+          NSGraphicsContext.restoreGraphicsState()
+          
+          let resizedImage = NSImage(size: newSize)
+          resizedImage.addRepresentation(bitmapRep)
+          return resizedImage
+        } else {
+          return self
+        }
+      } else {
+        return self
+      }
+    }
+    
+    func flipped() -> Image {
+      let transform = NSAffineTransform()
+      let dimensions = self.size
+      let flip = NSAffineTransformStruct(m11: -1.0, m12: 0.0, m21: 0.0, m22: 1.0, tX: dimensions.width, tY: 0.0)
+      let tmpImage = NSImage.init(size: self.size)
+      tmpImage.lockFocus()
+      transform.transformStruct = flip
+      transform.concat()
+      self.draw(at: NSMakePoint(0,0),
+                from: NSMakeRect(0,0, dimensions.width, dimensions.height),
+                operation: .copy,
+                fraction:1.0)
+      tmpImage.unlockFocus()
+      return tmpImage
+    }
+    
+  }
+  
+  
 #endif
 
 #if os(macOS)
@@ -269,256 +696,31 @@ extension Notification {
   }
 #endif
 
-extension View {
-  public func onPressGesture( _ n : Int, _ t : TimeInterval, _ fn: @escaping(AnyObject?) -> Void) {
-    let x = ClosX(fn)
-    let z = PressGestureRecognizer(target: x, action: x.selector)
-    z.minimumPressDuration = t
-      #if os(macOS)
-        z.buttonMask = n
-      #endif
-    
-    self.addGestureRecognizer(z)
- }
-}
 
-#if os(iOS)
-  
-  public typealias TapGestureRecognizer = UITapGestureRecognizer
-  public typealias SwipeGestureRecognizer = UISwipeGestureRecognizer
-  public typealias PanGestureRecognizer = UISwipeGestureRecognizer
-  public typealias RotationGestureRecognizer = UIRotationGestureRecognizer
-  public typealias ZoomGestureRecognizer = UIPinchGestureRecognizer
-  
-#elseif os(macOS)
-
-  public typealias TapGestureRecognizer = NSClickGestureRecognizer
-  public typealias SwipeGestureRecognizer = NSPanGestureRecognizer
-  public typealias PanGestureRecognizer = NSPanGestureRecognizer
-  public typealias RotationGestureRecognizer = NSRotationGestureRecognizer
-  public typealias ZoomGestureRecognizer = NSMagnificationGestureRecognizer
-  
-#endif
-
-extension View {
-  public func onGesture<T : GestureRecognizer>(param : @escaping ((T) -> Void) = { (_ : T) in }, _ fn : @escaping (T) -> Void) {
-    let x = ClosX( {
-      if let d = $0 as? T { fn(d) }
-    })
-    let m = T(target: x, action: x.selector)
-    param(m)
-    self.addGestureRecognizer( m )
-  }
-}
-
-// ====================================================================================================
-// Layout
-// ====================================================================================================
-
-extension View {
-  public func stacker(vertical : Bool = false) -> Stacker {
-    self.translatesAutoresizingMaskIntoConstraints = false
-    return Stacker(self, vertical: vertical) }
-}
-
-infix operator ~ : AdditionPrecedence
-
-public enum Stackable {
-  case bottom
-  case trailing
-  case pad(CGFloat)
-  case view(View)
-}
-
-/* This is a helper class which lets me create horizontal or vertical stacks of views
- using constraints */
-public class Stacker {
-  let view : View
-  var prev : View? = nil
-  var pad : CGFloat = 0
-  var cntr : Bool = false
-  var vert : Bool
-  var ins : CGFloat = 5
-  var pct : CGFloat = 0
-  
-  init(_ v : View, vertical : Bool) { view = v; vert = vertical }
-  
-  @discardableResult public func pad(_ p : CGFloat) -> Stacker {
-    pad = p
-    return self
+extension Image {
+  func saveToDisk() -> URL {
+    var fileURL = FileManager.default.temporaryDirectory
+    let filename = UUID().uuidString
+    fileURL.appendPathComponent(filename)
+    let data = self.pngData!
+    try! data.write(to: fileURL)
+    return fileURL
   }
   
-  @discardableResult public func spread(_ p : CGFloat) -> Stacker {
-    pct = p
-    return self
-  }
-  
-  @discardableResult public func center() -> Stacker {
-    cntr = true
-    return self
-  }
-  
-  @discardableResult public func inset(_ i : CGFloat) -> Stacker {
-    ins = i
-    cntr = false
-    return self
-  }
-  
-  @discardableResult public func views(_ v : [View]) -> Stacker {
-    v.forEach { self.view($0) }
-    return self
-  }
-  
-  @discardableResult public func view(_ v : View) -> Stacker {
-    view.addSubview(v)
-    v.translatesAutoresizingMaskIntoConstraints = false
-    if let p = prev {
-      if vert {
-        v.topAnchor.constraint(equalTo: p.bottomAnchor, constant: pad).isActive = true
-      } else {
-        v.leadingAnchor.constraint(equalTo: p.trailingAnchor, constant: pad).isActive = true
+  public func displayOn(_ v : ImageView, direction: String? = nil, reflect: Bool) {
+    DispatchQueue.main.async {
+      var z = self.scaledTo(v.bounds.size)
+      // bottom and top are reversed
+      if let d = direction { v.slideIn(direction: d)  } // left, right bottom
+      if reflect { z = z.flipped()
+        // Image.init(cgImage: z.cgImage!, scale: 1.0, orientation: UIImageOrientation.upMirrored)
       }
-    } else {
-      if vert {
-        v.topAnchor.constraint(equalTo: view.topAnchor, constant: pad).isActive = true
-      } else {
-        v.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: pad).isActive = true
-      }
-    }
-    if vert {
-      if cntr {
-        v.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-      } else {
-        v.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: ins).isActive = true
-      }
-      v.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -2 * ins).isActive = true
-
-      if pct != 0 {
-         v.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: pct, constant: -2 * pad).isActive = true
-      } else {
-        let vz = v.intrinsicContentSize
-        // FIXME:  This breaks the Swatch selector -- but if I can find a better way,
-        // I should use that -- this constraint conflicts with height==width
-        if vz.height > 0 && v.classForCoder == Label.self {
-          v.heightAnchor.constraint(equalToConstant: vz.height).isActive = true
-        }
-      }
-    } else {
-      if cntr {
-        v.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-      } else {
-        v.topAnchor.constraint(equalTo: view.topAnchor, constant: ins).isActive = true
-      }
-      v.heightAnchor.constraint(equalTo: view.heightAnchor, constant: -2 * ins).isActive = true
-      if pct != 0 {
-        v.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: pct, constant: -2 * pad).isActive = true
-      } else {
-        // FIXME:
-      }
-    }
-    prev = v
-    return self
-  }
-  
-  @discardableResult public func end() -> View {
-      // greaterThanOrEqualTo ?
-    
-    let p = prev == nil ? view : prev!
-    if vert {
-      p.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -pad).isActive = true
-      // p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
-    } else {
-      p.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -pad).isActive = true
-      // p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
-    }
-    prev = nil
-    pad = 0
-    pct = 0
-    ins = 5
-    cntr = false
-    return view
-  }
-}
-
-#if os(macOS)
-
-  extension NSStackView {
-      public convenience init( arrangedSubviews vs: [View]) {
-          self.init(views: vs)
-      }
-
-      public var axis : NSUserInterfaceLayoutOrientation { get { return self.orientation }
-          set { self.orientation = newValue }
-      }
-  
-    }
-
-  extension CollectionView {
-      public func performBatchUpdates(_ updates: (() -> Void)?,
-                                      completion: ((Bool) -> Void)? = nil) {
-        self.performBatchUpdates(updates, completionHandler: completion)
-    }
-  }
-
-#endif
-
-public class HideableView<T : View> : View {
-  public let innerView : T
-  
-  /*public var zconst = [NSLayoutConstraint]()
-  public var xconst = [NSLayoutConstraint]()
-  public var yconst = [NSLayoutConstraint]()
-  */
-  
-  public init(_ view : T) {
-    self.innerView = view
-    super.init(frame: CGRect.zero)
-    innerView.addInto(self)
-    
-    /*self.xconst = self.constraints
-    self.yconst = innerView.constraints
-    
-    self.zconst = [
-      // FIXME: None of this seems to work right
-      // self.widthAnchor.constraint(equalToConstant: 0),
-      self.heightAnchor.constraint(equalToConstant: 0)
-      // innerView.widthAnchor.constraint(equalToConstant: 0),
-      // innerView.heightAnchor.constraint(equalToConstant: 0)
-    ]
-    self.constraints.forEach { $0.priority = UILayoutPriority(rawValue: Float(min(999, Int($0.priority.rawValue)))) } */
-  }
-  
-  public required init(coder: NSCoder) {
-    fatalError("not implemented yet")
-  }
-  
-  public var makeHidden : Bool { get {
-      return innerView.isHidden
-    }
-    set {
-      if newValue {
-        innerView.isHidden = true
-        /*self.yconst.forEach { $0.isActive = false }
-        self.xconst.forEach { $0.isActive = false }
-         */
-        // zconst.forEach { $0.isActive = true }
-
-        
-        innerView.removeFromSuperview()
-        
-        /*let cc = self.constraints.filter { if let j = $0.secondItem as? View, j == self { return true } else { return false }}
-        self.removeConstraints(cc)*/
-        
-      } else {
-        
-        innerView.isHidden = false
-       // zconst.forEach { $0.isActive = false }
-       /* xconst.forEach { $0.isActive = true }
-        yconst.forEach { $0.isActive = true }*/
-        innerView.addInto(self)
-      }
+      // v.transform = CGAffineTransform(scaleX: -1, y: 1) }
+      v.image = z
+      // v.setNeedsDisplay()
     }
   }
   
 }
+
 
