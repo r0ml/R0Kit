@@ -131,8 +131,8 @@
       get { return alignment }
       set { alignment = newValue }
     }
-    
   }
+  
 #endif
 
 // ============================= ImageView ===============================
@@ -169,6 +169,7 @@
 #endif
 
 // =============================
+
 #if os(iOS)
   public class XR : NSObject {
     var fn : (()->Void)? = nil
@@ -189,8 +190,6 @@
     }
   }
   
-  
-  
   extension UIBarButtonItem {
     public convenience init(title: String, _ fn : @escaping (AnyObject?) -> Void) {
       let t = ClosX(fn)
@@ -203,7 +202,6 @@
     public func setAttributedTitle(_ str : NSAttributedString) {
       self.setAttributedTitle(str, for: .normal)
     }
-    
   }
   
   public protocol  Draggable : AnyObject {
@@ -251,7 +249,6 @@
   }
   
   extension View {
-    
     open var myLayer: CALayer {
       get { return self.layer }
     }
@@ -264,7 +261,6 @@
     open func setTransparentBackground() {
       self.backgroundColor = Color.clear
     }
-    
   }
   
   open class ViewController : UIViewController {
@@ -275,10 +271,7 @@
     required public init?(coder aDecoder: NSCoder) {
       fatalError("init(coder:) has not been implemented")
     }
-    
   }
-  
-
 #endif
   
 
@@ -300,7 +293,6 @@ extension GestureRecognizer {
     self.init(target: x, action: x.selector)
   }
 }
-
 
 // -----------------------------------------------------------------------------
 
@@ -325,6 +317,7 @@ extension GestureRecognizer {
       // dq.signal()
     }
   }
+  
 #elseif os(macOS)
   public func raiseAlert(title: String, message: String, window: NSWindow, _ fn : @escaping () -> ()) {
     let alert = NSAlert()
@@ -346,8 +339,6 @@ extension GestureRecognizer {
     }
     print("done")
   }
-  
-
   
   extension NSMenuItem {
     public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping (AnyObject?) -> Void) -> NSMenuItem {
@@ -429,7 +420,6 @@ extension GestureRecognizer {
       get { return alignment }
       set { alignment = newValue }
     }
-    
   }
   
   // FIXME: This only exists for Transcript.
@@ -482,13 +472,10 @@ extension GestureRecognizer {
       set { hasHorizontalScroller = newValue }
     }
     
-    
     public var contentInset : NSEdgeInsets {
       get { return self.contentInsets }
     }
   }
-  
-
   
   extension TextField {
     public func setTransparentBackground() {
@@ -586,13 +573,12 @@ extension GestureRecognizer {
       tmpImage.unlockFocus()
       return tmpImage
     }
-    
   }
-  
   
 #endif
 
 #if os(macOS)
+  
   extension NSBezierPath {
     public func addArc(withCenter: CGPoint, radius: CGFloat, startAngle: CGFloat, endAngle: CGFloat, clockwise: Bool = false) {
       let sa = clockwise ? endAngle : startAngle
@@ -612,7 +598,7 @@ extension GestureRecognizer {
       get { return self.windingRule == .evenOddWindingRule }
       set { self.windingRule = newValue ? .evenOddWindingRule : .nonZeroWindingRule }
     }
-}
+  }
   
   extension NSBezierPath.LineCapStyle {
     public static let round = roundLineCapStyle
@@ -641,7 +627,6 @@ extension GestureRecognizer {
       return path
     }
   }
-  
   
   public func UIGraphicsGetCurrentContext() -> CGContext? {
     return NSGraphicsContext.current?.cgContext
@@ -696,7 +681,6 @@ extension GestureRecognizer {
   }
 #endif
 
-
 extension Image {
   func saveToDisk() -> URL {
     var fileURL = FileManager.default.temporaryDirectory
@@ -720,7 +704,4 @@ extension Image {
       // v.setNeedsDisplay()
     }
   }
-  
 }
-
-

@@ -11,8 +11,8 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
   var _tags = [String]()
   public var tags : [String] {
     get { return _tags }
-    set { _tags = newValue; self.collectionView.reloadData()
-      self.collectionView.setNeedsLayout()
+    set { _tags = newValue; (self.view as! CollectionView).reloadData()
+      self.view.setNeedsLayout()
       // self.collectionView.myLayer.delegate = LD()
       // self.collectionView.myLayer.setNeedsDisplay()
     }
@@ -25,23 +25,22 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
   
   public func intrinsicContentSize(_ s : CGSize) -> CGSize {
     #if os(macOS)
-      self.collectionView.setFrameSize(s)
-      let ss = self.collectionView.collectionViewLayout!.collectionViewContentSize
+      self.view.setFrameSize(s)
+      let ss = (self.view as! CollectionView).collectionViewLayout!.collectionViewContentSize
     #elseif os(iOS)
-      self.collectionView.bounds = CGRect(origin: CGPoint.zero, size: s)
-      let ss = self.collectionView.collectionViewLayout.collectionViewContentSize
+      self.view.bounds = CGRect(origin: CGPoint.zero, size: s)
+      let ss = (self.view as! CollectionView).collectionViewLayout.collectionViewContentSize
     #endif
     return ss
   }
   
   override public func setup() {
-    view = collectionView
     
     #if os(iOS)
       view.setTransparentBackground()
-      #endif
+    #endif
     
-    collectionView.setContentHuggingPriority(.defaultHigh, for: .vertical)
+    view.setContentHuggingPriority(.defaultHigh, for: .vertical)
     
     // view.myLayer.backgroundColor = Color.purple.cgColor
 

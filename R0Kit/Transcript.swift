@@ -51,9 +51,9 @@ public class Transcript: CollectionViewController<NSAttributedString, MyCell>, C
     // self.collectionView.beginUpdates()
     if lines.count > limit {
       lines.removeFirst( lines.count - limit)
-      self.collectionView.deleteItems(at: [IndexPath(item: 0, section: 0)])
+      (self.view as! CollectionView).deleteItems(at: [IndexPath(item: 0, section: 0)])
     }
-    self.collectionView.insertItems(at: [IndexPath(item: lines.count-1, section: 0)])
+    (self.view as! CollectionView).insertItems(at: [IndexPath(item: lines.count-1, section: 0)])
     // tblv.endUpdates()
     
     /*if scrollQ {
@@ -74,7 +74,7 @@ public class Transcript: CollectionViewController<NSAttributedString, MyCell>, C
     
     wnd.setFrameAutosaveName(fan)
     
-    let tblv = self.collectionView
+    let tblv = self.view
     
     let sv = NSScrollView(frame: CGRect.zero)
     sv.hasVerticalScroller = true

@@ -207,7 +207,7 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     return 0
   }
  
-  public var collectionView = CollectionView(empty: true)
+  // public var collectionView = CollectionView(empty: true)
   public typealias Shim = CollectionItemShim<U, T>
 
   open func setup() {
@@ -216,14 +216,15 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   public required init(with cellType: Shim.Type) {
     super.init()
-    collectionView.delegate = self
-    collectionView.dataSource = self
+    view = CollectionView(empty: true)
+    (view as! CollectionView).delegate = self
+    (view as! CollectionView).dataSource = self
     
     // *********************************************************************************
     // THE DELEGATE, DATASOURCE, AND COLLECTIONVIEWLAYOUT MUST BE SET BEFORE REGISTERING
     // *********************************************************************************
     
-    collectionView.register(cellType)
+    (view as! CollectionView).register(cellType)
     setup()
   }
 
@@ -242,10 +243,10 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   open override func viewWillLayout() {
   super.viewWillLayout()
-  let z = collectionView.bounds
+  let z = view.bounds
   if z == lastBounds { return }
   lastBounds = z
-  collectionView.invalidateLayout()
+  (view as! CollectionView).invalidateLayout()
   }
   
   // FIXME: should this be true or false?
@@ -291,7 +292,7 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     headerFn = { (a,x) in fn( a as! Z, x) }
     headerFnID = Z.identifier
     
-    self.collectionView.register(Z.self, forSupplementaryViewOfKind: "UICollectionElementKindSectionHeader", withReuseIdentifier: Z.identifier)
+    (self.view as! CollectionView).register(Z.self, forSupplementaryViewOfKind: "UICollectionElementKindSectionHeader", withReuseIdentifier: Z.identifier)
   }
   
 
