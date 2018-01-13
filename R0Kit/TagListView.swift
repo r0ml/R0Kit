@@ -11,7 +11,7 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
   var _tags = [String]()
   public var tags : [String] {
     get { return _tags }
-    set { _tags = newValue; (self.view as! CollectionView).reloadData()
+    set { _tags = newValue.sorted(); (self.view as! CollectionView).reloadData()
       self.view.setNeedsLayout()
       // self.collectionView.myLayer.delegate = LD()
       // self.collectionView.myLayer.setNeedsDisplay()

@@ -111,11 +111,11 @@ public class Stacker {
       // if that's the case, I should automatically toss an empty view in here
       
       // The reason for
-      p.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -pad).isActive = true
-      // p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
+      // p.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -pad).isActive = true
+      p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
     } else {
-      p.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -pad).isActive = true
-      // p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
+      // p.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -pad).isActive = true
+      p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
     }
     prev = nil
     pad = 0
