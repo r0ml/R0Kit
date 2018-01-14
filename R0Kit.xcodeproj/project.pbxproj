@@ -119,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				E73C6FEC1FBFD05D009B0D7F /* RecordDecoder.swift */,
+				E79E52901FBF9F9300FCAD98 /* Info.plist */,
 				E73C6FEE1FC09134009B0D7F /* RecordEncoder.swift */,
 				E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */,
 				E73873FC1FC9F9C6009C3C28 /* HTMLDecoder.swift */,
@@ -134,7 +135,6 @@
 				E79E52A71FBFA1E400FCAD98 /* Photos.swift */,
 				E79E52B41FBFA21200FCAD98 /* DataModel.swift */,
 				E79E52B51FBFA21300FCAD98 /* Transcript.swift */,
-				E79E52901FBF9F9300FCAD98 /* Info.plist */,
 				E79E52BB1FBFA27E00FCAD98 /* macosx */,
 				E79E52BC1FBFA2AC00FCAD98 /* iphoneos */,
 				E79E52BD1FBFA2CD00FCAD98 /* iphonesimulator */,
