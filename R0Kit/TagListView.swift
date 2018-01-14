@@ -41,6 +41,8 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
       view.setTransparentBackground()
     #endif
     
+    
+    
     view.setContentHuggingPriority(.defaultHigh, for: .vertical)
     
     // view.myLayer.backgroundColor = Color.purple.cgColor

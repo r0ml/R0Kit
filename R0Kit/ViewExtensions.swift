@@ -342,6 +342,7 @@ extension View {
       }
       
       imageView.image = image
+      imageView.contentMode = .scaleAspectFit
 
       // aView.addSubview(self.view)
       self.modalPresentationStyle = .overCurrentContext

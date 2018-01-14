@@ -129,7 +129,11 @@
       
       // return true
       
-      return !(self.collectionView?.enclosingScrollView?.bounds.size == newBounds.size)
+      if let a = self.collectionView, let b = a.enclosingScrollView {
+        return !(b.bounds.size == newBounds.size)
+      } else {
+        return true
+      }
     }
   }
 #endif
@@ -234,15 +238,16 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   public required init(with cellType: Shim.Type) {
     super.init()
-    view = CollectionView(empty: true)
-    (view as! CollectionView).delegate = self
-    (view as! CollectionView).dataSource = self
+    let v = CollectionView(empty: true)
+    v.delegate = self
+    v.dataSource = self
     
     // *********************************************************************************
     // THE DELEGATE, DATASOURCE, AND COLLECTIONVIEWLAYOUT MUST BE SET BEFORE REGISTERING
     // *********************************************************************************
     
-    (view as! CollectionView).register(cellType)
+    v.register(cellType)
+    view = v
     setup()
   }
 
@@ -390,16 +395,16 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   #endif
 
-  open func collectionView(_ collectionView: CollectionView, didSelectItemsAt indexPaths: Set<IndexPath>) {
-      print("forgot to override CollectionViewController.didSelectItemsAt")
-    }
+  final public func collectionView(_ collectionView: CollectionView, didSelectItemsAt indexPaths: Set<IndexPath>) {
+    indexPaths.forEach { self.collectionView(collectionView, didSelectItemAt: $0) }
+  }
   
   open func collectionView(_ collectionView : CollectionView, didSelectItemAt indexPath: IndexPath) {
     print("forgot to override CollectionViewController.didSelectItemAt")
   }
   
-  open func collectionView(_ collectionView: CollectionView, didDeselectItemsAt indexPaths: Set<IndexPath>) {
-    print("forgot to override CollectionViewController.didDeselectItemsAt")
+  final public func collectionView(_ collectionView: CollectionView, didDeselectItemsAt indexPaths: Set<IndexPath>) {
+    indexPaths.forEach { self.collectionView(collectionView, didDeselectItemAt: $0) }
   }
   
   open func collectionView(_ collectionView : CollectionView, didDeselectItemAt indexPath: IndexPath) {
