@@ -105,7 +105,7 @@ public class Transcript: CollectionViewController<NSAttributedString, MyCell>, C
   }
   
   public override func collectionView(cellForItemAt indexPath: IndexPath, in collectionView: CollectionView ) -> Shim {
-    let item = collectionView.makeCell(indexPath) { (x : MyCell) -> Void in
+    let item = collectionView.makeCell(indexPath) { ( x : MyCell) -> Void in
       x.setRepresentedObject( self.lines[indexPath.item] )
       if (indexPath.item % 2) == 1 { x.myLayer.backgroundColor = Color(hex: 0xFCFCFC).cgColor }
     }

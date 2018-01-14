@@ -82,6 +82,7 @@
       self.init(frame: frame)
       self.collectionViewLayout = collectionViewLayout
     }
+    
   }
   
   open class CollectionViewCell : CollectionViewItem {
@@ -136,14 +137,11 @@
 #if os(macOS)
   extension CollectionView {
     public func makeCell<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> CollectionItemShim<U, T> {
-      if let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? CollectionItemShim<U, T> {
-        fn(item.itemView)
-        return item
-      } else {
-        let z = CollectionItemShim<U, T>.init(frame: CGRect.zero)
-        fn(z.itemView)
-        return z
-      }
+      let item = self.makeItem(withIdentifier: NSUserInterfaceItemIdentifier(rawValue: T.identifier), for: indexPath) as? CollectionItemShim<U, T> ?? CollectionItemShim<U, T>.init(frame: CGRect.zero)
+      item.itemView.myIndexPath = indexPath
+      item.itemView.collectionView = self
+      fn(item.itemView)
+      return item
     }
     
    /* public func makeSupplementary<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn : @escaping (T)->Void) -> CollectionItemShim<U, T> {
@@ -163,12 +161,23 @@
     let c : CollectionItemShim<U,T> = self.item(at: indexPath) as! CollectionItemShim<U, T>
     fn(c.itemView)
   }
+    
+    public var allowsSelection : Bool {
+      get { return isSelectable }
+      set { isSelectable = newValue }
+    }
+    
+
+    
+    
   }
 
 #elseif os(iOS)
   extension CollectionView {
     public func makeCell<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> CollectionItemShim<U,T> {
       if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? CollectionItemShim<U,T> {
+        cell.itemView.myIndexPath = indexPath
+        cell.itemView.collectionView = self
         fn(cell.itemView)
         return cell
       }
@@ -176,9 +185,10 @@
       return CollectionItemShim<U,T>()
     }
     
-    public func forCell<U, T : CollectionReusableView<U> >(at indexPath: IndexPath, fn do: @escaping (T) -> Void) {
-      let c : CollectionItemShim<U,T> = self.item(at: indexPath)
-      fn(c.itemView)
+    public func forCell<U, T : CollectionReusableView<U> >(at indexPath: IndexPath, do fn: @escaping (T) -> Void) {
+      if let c = self.cellForItem(at: indexPath) as? CollectionItemShim<U, T> {
+        fn(c.itemView)
+      }
     }
   /*  public func makeSupplementary<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> CollectionItemShim<U,T> {
     if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? CollectionItemShim<U,T> {
@@ -189,7 +199,6 @@
     return CollectionItemShim<U,T>()
   }
  */
-    
     
   }
   
@@ -250,8 +259,8 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   }
 
   public var itemsAreSelectable : Bool {
-      get { return (self.view as! CollectionView).isSelectable }
-      set { (self.view as! CollectionView).isSelectable = newValue }
+      get { return (self.view as! CollectionView).allowsSelection }
+      set { (self.view as! CollectionView).allowsSelection = newValue }
 }
 /*
     #elseif os(iOS)
@@ -344,6 +353,23 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   }
   
+  open func collectionView(_ collectionView: CollectionView, didChangeItemsAt indexPaths: Set<IndexPath>, to highlightState: NSCollectionViewItem.HighlightState) {
+  indexPaths.forEach {
+  switch highlightState {
+  case .forSelection:
+  self.collectionView(collectionView, didHighlightItemAt: $0)
+  case .forDeselection:
+  self.collectionView(collectionView, didUnhighlightItemAt: $0)
+  case .asDropTarget:
+  // FIXME: highlight for Drop Target
+  break
+  case .none:
+  break // v.backgroundColor = Color.white
+
+  }
+  }
+  }
+  
   #elseif os(iOS)
   
   open func collectionView(_ collectionView: CollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
@@ -407,16 +433,23 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   open func collectionView(_ collectionView: CollectionView, layout collectionViewLayout: CollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
     return 2
   }
-
-  open func collectionView(_ collectionView: CollectionView, didChangeItemsAt indexPaths: Set<IndexPath>, to highlightState: NSCollectionViewItem.HighlightState) {
-    print("forgot to override CollectionViewController didChangeItemsAt:highglightState:")
+  
+  open func collectionView(_ collectionView: CollectionView, didHighlightItemAt indexPath: IndexPath) {
+    print("forgot to override CollectionViewController.didHighlightItemAt")
   }
-
+  
+  open func collectionView(_ collectionView: CollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+    print("forgot to override CollectionViewController.didUnhighlightItemAt")
+  }
+  
 }
 
 // CollectionViewController
 #if os(iOS)
   open class CollectionReusableView<T> : UICollectionReusableView {
+    open var myIndexPath : IndexPath?
+    open var collectionView : CollectionView?
+    
     // private var representedObject : T // since the view is reusable, this has to be modifiable
     open func setRepresentedObject(_ x: T) {
       // representedObject = x
@@ -444,6 +477,9 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   open class CollectionReusableView<T> : View {
     open class var identifier : String { return String(describing: T.self) }
+    
+    open var myIndexPath : IndexPath?
+    open var collectionView : CollectionView?
     
     public var R0Class : T.Type { return T.self }
     

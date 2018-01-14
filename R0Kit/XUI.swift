@@ -48,7 +48,7 @@
   public typealias ScrollView = NSScrollView
   
   public typealias TextField = NSTextField
-  public typealias TextView = NSTextView
+  // public typealias TextView = NSTextView
   public typealias TextViewDelegate = NSTextViewDelegate
   
   public typealias TableView = NSTableView
@@ -133,6 +133,17 @@
     }
   }
   
+  extension NSControl {
+  }
+  
+  open class TextView : NSTextView {
+    public var userInteractionEnabled : Bool = true
+    
+    override open func becomeFirstResponder() -> Bool {
+      return userInteractionEnabled
+    }
+  }
+
 #endif
 
 // ============================= ImageView ===============================
@@ -195,6 +206,17 @@
       let t = ClosX(fn)
       self.init(title: title, style: .plain, target: t, action: t.selector)
     }
+    
+    public convenience init(image: UIImage?, style: UIBarButtonItemStyle, _ fn : @escaping (() -> Void)) {
+        let x = ClosX({ _ in fn() } )
+        self.init(image: image, style: style, target: x, action: x.selector)
+      }
+
+    public convenience init(title: String?, style: UIBarButtonItemStyle, _ fn : @escaping (() -> Void)) {
+        let x = ClosX( { _ in fn() } )
+        self.init(title: title, style: style, target: x, action: x.selector)
+      }
+    
   }
   
   public class Button : UIButton {
@@ -349,7 +371,7 @@ extension GestureRecognizer {
     }
   }
   
-  extension View {
+  extension NSView {
     
     open var myLayer: CALayer {
       get { self.wantsLayer = true; return self.layer! }
@@ -379,6 +401,7 @@ extension GestureRecognizer {
      // self.drawsBackground = false
      self.backgroundColor = Color.clear
      }*/
+
   }
   
   extension TextField {
@@ -401,7 +424,7 @@ extension GestureRecognizer {
     }
   }
   
-  extension TextView {
+  extension NSTextView {
     public var text : String {
       get {
         return self.string
@@ -419,6 +442,11 @@ extension GestureRecognizer {
     public var textAlignment : NSTextAlignment {
       get { return alignment }
       set { alignment = newValue }
+    }
+    
+    public var attributedText : NSAttributedString {
+      get { return self.textStorage ?? NSAttributedString(string: "") }
+      set { self.textStorage?.setAttributedString( newValue ) }
     }
   }
   

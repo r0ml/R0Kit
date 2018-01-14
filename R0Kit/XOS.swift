@@ -60,6 +60,17 @@ import CommonCrypto
 #endif
 
 
+extension String {
+  public func contains(_ find: String) -> Bool{
+    return find.count == 0 || self.range(of: find) != nil
+  }
+  
+  public func containsIgnoringCase(_ find: String) -> Bool{
+    return find.count == 0 || self.range(of: find, options: .caseInsensitive) != nil
+  }
+}
+
+
 
 extension CKAsset {
   public convenience init(data: Data) {
