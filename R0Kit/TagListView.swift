@@ -7,6 +7,7 @@ class LD : NSObject, CALayerDelegate {
     ctx.fill(layer.bounds);
   }
 }
+
 public class TagFieldController : CollectionViewController<String, TagView>, CollectionViewDelegateFlowLayout {
   var _tags = [String]()
   public var tags : [String] {
@@ -14,6 +15,7 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     set { _tags = newValue.sorted()
       self.reloadData()
       self.view.setNeedsLayout()
+      // (self.view as! CollectionView).scrollToItems(at: Set([IndexPath.init(item: 0, section: 0)]), scrollPosition: .leadingEdge)
       // self.collectionView.myLayer.delegate = LD()
       // self.collectionView.myLayer.setNeedsDisplay()
     }

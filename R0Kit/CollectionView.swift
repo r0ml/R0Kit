@@ -82,7 +82,6 @@
       self.init(frame: frame)
       self.collectionViewLayout = collectionViewLayout
     }
-    
   }
   
   open class CollectionViewCell : CollectionViewItem {

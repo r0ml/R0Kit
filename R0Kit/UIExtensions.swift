@@ -10,8 +10,8 @@
 public class HideableView<T : View> : View {
   public var innerView : T
   
-  /*public var zconst = [NSLayoutConstraint]()
-   public var xconst = [NSLayoutConstraint]()
+  public var zconst = [NSLayoutConstraint]()
+  /* public var xconst = [NSLayoutConstraint]()
    public var yconst = [NSLayoutConstraint]()
    */
   
@@ -23,15 +23,18 @@ public class HideableView<T : View> : View {
     
     /*self.xconst = self.constraints
      self.yconst = innerView.constraints
-     
+     */
+    
+    // FIXME:  It works right for vertical stacks
+    // a horizontal stack should use a constraint in the other direction
      self.zconst = [
      // FIXME: None of this seems to work right
      // self.widthAnchor.constraint(equalToConstant: 0),
-     self.heightAnchor.constraint(equalToConstant: 0)
+       self.heightAnchor.constraint(equalToConstant: 0)
      // innerView.widthAnchor.constraint(equalToConstant: 0),
      // innerView.heightAnchor.constraint(equalToConstant: 0)
      ]
-     self.constraints.forEach { $0.priority = UILayoutPriority(rawValue: Float(min(999, Int($0.priority.rawValue)))) } */
+     /*self.constraints.forEach { $0.priority = UILayoutPriority(rawValue: Float(min(999, Int($0.priority.rawValue)))) } */
   }
   
   /** This is not implemented and shouldn't be used */
@@ -53,9 +56,10 @@ public class HideableView<T : View> : View {
         /*self.yconst.forEach { $0.isActive = false }
          self.xconst.forEach { $0.isActive = false }
          */
-        // zconst.forEach { $0.isActive = true }
         
         innerView.removeFromSuperview()
+        zconst.forEach { $0.isActive = true }
+        
         
         /*let cc = self.constraints.filter { if let j = $0.secondItem as? View, j == self { return true } else { return false }}
          self.removeConstraints(cc)*/
@@ -63,13 +67,19 @@ public class HideableView<T : View> : View {
       } else {
         super.isHidden = false
         innerView.isHidden = false
-        // zconst.forEach { $0.isActive = false }
+        zconst.forEach { $0.isActive = false }
         /* xconst.forEach { $0.isActive = true }
          yconst.forEach { $0.isActive = true }*/
         innerView.addInto(self)
       }
+      self.setNeedsLayout()
     }
   }
+  
+ /* override public var intrinsicContentSize : CGSize { get { return innerView.intrinsicContentSize }}
+  
+  override public var fittingSize : CGSize { get { return innerView.fittingSize }}
+  */
   
 }
 

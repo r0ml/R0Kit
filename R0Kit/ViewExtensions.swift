@@ -105,11 +105,19 @@ public class Stacker {
   /** wrap up the creation of a stack by adding constraints from the last
    view in the stack to the parent's edge */
   @discardableResult public func end() -> View {
+    pct = 0
+    ins = 5
+    cntr = false
+
+    let vv = View()
+
+    pad = 0
+
+    vv.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+    vv.widthAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+    self.view(vv)
     let p = prev == nil ? view : prev!
     if vert {
-      // FIXME:  This seems to work if I toss an empty view before the end()
-      // if that's the case, I should automatically toss an empty view in here
-      
       // The reason for
       // p.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -pad).isActive = true
       p.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -pad).isActive = true
@@ -118,10 +126,6 @@ public class Stacker {
       p.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -pad).isActive = true
     }
     prev = nil
-    pad = 0
-    pct = 0
-    ins = 5
-    cntr = false
     return view
   }
 }
