@@ -234,10 +234,11 @@ extension View {
   
   // Name this function in a way that makes sense to you...
   // slideFromLeft, slideRight, slideLeftToRight, etc. are great alternative names
-  func slideIn(duration: TimeInterval = 1.0, direction: String
+  // FIXME: Why does this sometimes happen, and sometimes not?
+  func slideIn(duration: TimeInterval = 0.9, direction: String
     /*, completionDelegate: AnyObject? = nil */) {
     // Create a CATransition animation
-    let slideInFromLeftTransition = CATransition()
+    let slideInFrom = CATransition()
     
     // Set its callback delegate to the completionDelegate that was provided (if any)
     /*  if let delegate: AnyObject = completionDelegate {
@@ -245,14 +246,15 @@ extension View {
      } */
     
     // Customize the animation's properties
-    slideInFromLeftTransition.type = kCATransitionPush
-    slideInFromLeftTransition.subtype = direction
-    slideInFromLeftTransition.duration = duration
-    slideInFromLeftTransition.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
-    slideInFromLeftTransition.fillMode = kCAFillModeRemoved
+    slideInFrom.type = kCATransitionPush
+    slideInFrom.subtype = direction
+    slideInFrom.duration = duration
+    // slideInFrom.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseInEaseOut)
+    slideInFrom.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseOut)
+    slideInFrom.fillMode = kCAFillModeRemoved
     
     // Add the animation to the View's layer
-    self.myLayer.add(slideInFromLeftTransition, forKey: "slideInFromLeftTransition")
+    self.myLayer.add(slideInFrom, forKey: "slideInFromLeftTransition")
   }
 }
 
