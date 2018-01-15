@@ -9,6 +9,11 @@ class LD : NSObject, CALayerDelegate {
 }
 
 public class TagFieldController : CollectionViewController<String, TagView>, CollectionViewDelegateFlowLayout {
+  
+  var widthConstraint : NSLayoutConstraint!
+  
+  var heightConstraint : NSLayoutConstraint!
+  
   var _tags = [String]()
   public var tags : [String] {
     get { return _tags }
@@ -23,7 +28,12 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
   
   convenience public init(tags ts : Set<String>) {
     self.init()
+    widthConstraint = self.view.widthAnchor.constraint(equalToConstant: 0)
+    heightConstraint = self.view.heightAnchor.constraint(equalToConstant: 0)
     tags = Array(ts)
+    view.isUserInteractionEnabled = false
+    (self.view as! CollectionView).isScrollEnabled = false
+    ((self.view as! CollectionView).collectionViewLayout as! CollectionViewFlowLayout).scrollDirection = .horizontal
   }
   
   public func intrinsicContentSize(_ s : CGSize) -> CGSize {
@@ -32,7 +42,8 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
       let ss = (self.view as! CollectionView).collectionViewLayout!.collectionViewContentSize
     #elseif os(iOS)
       self.view.bounds = CGRect(origin: CGPoint.zero, size: s)
-      let ss = (self.view as! CollectionView).collectionViewLayout.collectionViewContentSize
+      // let ss = (self.view as! CollectionView).collectionViewLayout.collectionViewContentSize
+      let ss = (self.view as! CollectionView).contentSize
     #endif
     return ss
   }
@@ -62,6 +73,41 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     
   }
   
+  override public func viewDidLayoutSubviews() {
+    
+    print("did layout subviews", self.view.frame)
+    let s = self.intrinsicContentSize( (self.view as! CollectionView).contentSize)
+    if let c = self.widthConstraint {
+      c.constant = s.width
+    } else {
+      self.widthConstraint = self.view.widthAnchor.constraint(equalToConstant: s.width)
+    }
+    
+    if let h = self.heightConstraint {
+      h.constant = s.height
+    } else {
+      self.heightConstraint = self.view.heightAnchor.constraint(equalToConstant: s.height)
+    }
+    self.widthConstraint.isActive = true
+    self.heightConstraint.isActive = true
+    
+  }
+
+  /*override public func viewWillLayoutSubviews() {
+    print("will layout subviews", self.view.frame)
+  }
+  override public func viewLayoutMarginsDidChange() {
+    print("layout margins", self.view.layoutMargins)
+  } */
+  
+  override public func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    /** This is required because the superclass (which is a UIScrollKit) enables
+        the pan gesture when the view will appear -- so I need to disable it to prevent
+        'scroll within scroll' */
+    (self.view as! CollectionView).panGestureRecognizer.isEnabled = false
+    (self.view as! CollectionView).isScrollEnabled = false
+  }
   
   // section 1 is optical, section 2 is sunglasses?
   override public func numberOfSections(in collectionView: CollectionView) -> Int {
