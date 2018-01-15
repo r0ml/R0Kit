@@ -45,7 +45,7 @@
   
   public typealias EdgeInsets = NSEdgeInsets
   public typealias LayoutGuide = NSLayoutGuide
-  public typealias ScrollView = NSScrollView
+  // public typealias ScrollView = NSScrollView
   
   public typealias TextField = NSTextField
   // public typealias TextView = NSTextView
@@ -142,6 +142,30 @@
     override open func becomeFirstResponder() -> Bool {
       return userInteractionEnabled
     }
+  }
+
+  open class ScrollView : NSScrollView {
+    public var userInteractionEnabled : Bool = true
+    
+    override open func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+      return userInteractionEnabled
+    }
+    
+    override open func becomeFirstResponder() -> Bool {
+      return userInteractionEnabled
+    }
+    
+    /** I need to pass the scroll event up to the controller
+        so that the controller can pass it up the line -- only if I'm not handling
+        it myself */
+    open override func scrollWheel(with event: Event) {
+      if userInteractionEnabled {
+        super.scrollWheel(with: event)
+      } else {
+        self.nextResponder?.scrollWheel(with: event)
+      }
+    }
+    
   }
 
 #endif
@@ -489,8 +513,9 @@ extension GestureRecognizer {
     }
   }
   
-  
-  extension ScrollView {
+  // The extensions need to be for NSScrollView, otherwise in places where
+  // foundation returns the scrollView, they wont be ScrollView
+  extension NSScrollView {
     public var showsVerticalScrollIndicator : Bool {
       get { return hasVerticalScroller }
       set { hasVerticalScroller = newValue }
@@ -511,7 +536,7 @@ extension GestureRecognizer {
     }
   }
   
-  extension TextView {
+  extension NSTextView {
     public func setTransparentBackground() {
       self.drawsBackground = false
     }

@@ -177,6 +177,7 @@
 
 #elseif os(iOS)
   extension CollectionView {
+    
     public func makeCell<U, T : CollectionReusableView<U> >(_ indexPath: IndexPath, _ fn: @escaping (T) -> Void) -> CollectionItemShim<U,T> {
       if let cell = self.dequeueReusableCell(withReuseIdentifier: T.identifier, for: indexPath) as? CollectionItemShim<U,T> {
         cell.itemView.myIndexPath = indexPath
@@ -221,6 +222,30 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   var headerFn : ((View, IndexPath) -> Void)?
   var headerFnID : String! // UICollectionReusableView.Type?
   
+  /*override open var view: NSView {
+    get { return super.view }
+    set { super.view = newValue }
+  }*/
+  
+  #if os(iOS)
+  public var collectionView : CollectionView {
+    get { return self.view as! CollectionView }
+  }
+
+  public var scrollView : ScrollView {
+      get { return self.view as! ScrollView }
+  }
+  
+  #elseif os(macOS)
+  public var collectionView : CollectionView {
+    get { return (self.view as! ScrollView).documentView as! CollectionView }
+  }
+  
+  public var scrollView : ScrollView {
+      get { return self.view as! ScrollView }
+  }
+  #endif
+  
   open func numberOfSections(in collectionView: CollectionView) -> Int {
     return 0
   }
@@ -246,7 +271,15 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     // *********************************************************************************
     
     v.register(cellType)
-    view = v
+    
+    #if os(iOS)
+      view = v
+    #elseif os(macOS)
+      let sv = ScrollView()
+      sv.documentView = v
+      view = sv
+    #endif
+
     setup()
   }
 
@@ -259,12 +292,12 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   }
   
   public func reloadData() {
-    (self.view as! CollectionView).reloadData()
+    self.collectionView.reloadData()
   }
 
   public var itemsAreSelectable : Bool {
-      get { return (self.view as! CollectionView).allowsSelection }
-      set { (self.view as! CollectionView).allowsSelection = newValue }
+      get { return self.collectionView.allowsSelection }
+      set { self.collectionView.allowsSelection = newValue }
 }
 /*
     #elseif os(iOS)
@@ -280,10 +313,10 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   
   open override func viewWillLayout() {
   super.viewWillLayout()
-  let z = view.bounds
+  let z = scrollView.bounds
   if z == lastBounds { return }
   lastBounds = z
-  (view as! CollectionView).invalidateLayout()
+  self.collectionView.invalidateLayout()
   }
   
   // FIXME: should this be true or false?
@@ -324,7 +357,7 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
     headerFn = { (a,x) in fn( a as! Z, x) }
     headerFnID = Z.identifier
     
-    (self.view as! CollectionView).register(Z.self, forSupplementaryViewOfKind: "UICollectionElementKindSectionHeader", withReuseIdentifier: Z.identifier)
+    self.collectionView.register(Z.self, forSupplementaryViewOfKind: "UICollectionElementKindSectionHeader", withReuseIdentifier: Z.identifier)
   }
   
 

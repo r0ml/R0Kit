@@ -1,13 +1,6 @@
 
 let textFont = Font(name: "Utopia Std", size: 14)!
 
-class LD : NSObject, CALayerDelegate {
-  public func draw(_ layer: CALayer, in ctx: CGContext) {
-    ctx.setFillColor(Color.yellow.cgColor);
-    ctx.fill(layer.bounds);
-  }
-}
-
 public class TagFieldController : CollectionViewController<String, TagView>, CollectionViewDelegateFlowLayout {
   
   var widthConstraint : NSLayoutConstraint!
@@ -19,44 +12,44 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     get { return _tags }
     set { _tags = newValue.sorted()
       self.reloadData()
-      self.view.setNeedsLayout()
-      // (self.view as! CollectionView).scrollToItems(at: Set([IndexPath.init(item: 0, section: 0)]), scrollPosition: .leadingEdge)
-      // self.collectionView.myLayer.delegate = LD()
-      // self.collectionView.myLayer.setNeedsDisplay()
+      self.scrollView.setNeedsLayout()
     }
+  }
+  
+  /** This, in combination with the same function in ScrollView,
+      has the effect of  passing the scrolling to the next higher scrolling view */
+  /* FIXME:  in the event that I want to handle the scrolling myself, I might need
+     to do something else */
+  public override func scrollWheel(with event: Event) {
+    self.nextResponder?.scrollWheel(with: event)
   }
   
   convenience public init(tags ts : Set<String>) {
     self.init()
-    widthConstraint = self.view.widthAnchor.constraint(equalToConstant: 0)
-    heightConstraint = self.view.heightAnchor.constraint(equalToConstant: 0)
+//    widthConstraint = self.view.widthAnchor.constraint(equalToConstant: 0)
+//    heightConstraint = self.view.heightAnchor.constraint(equalToConstant: 0)
     tags = Array(ts)
-    view.isUserInteractionEnabled = false
-    (self.view as! CollectionView).isScrollEnabled = false
-    ((self.view as! CollectionView).collectionViewLayout as! CollectionViewFlowLayout).scrollDirection = .horizontal
+//    (self.collectionView.collectionViewLayout as! CollectionViewFlowLayout).scrollDirection = .horizontal
   }
   
   public func intrinsicContentSize(_ s : CGSize) -> CGSize {
     #if os(macOS)
       self.view.setFrameSize(s)
-      let ss = (self.view as! CollectionView).collectionViewLayout!.collectionViewContentSize
+      let ss = self.collectionView.collectionViewLayout!.collectionViewContentSize
     #elseif os(iOS)
       self.view.bounds = CGRect(origin: CGPoint.zero, size: s)
-      // let ss = (self.view as! CollectionView).collectionViewLayout.collectionViewContentSize
-      let ss = (self.view as! CollectionView).contentSize
+      // let ss = self.collectionView.collectionViewLayout.collectionViewContentSize
+      let ss = self.collectionView.contentSize
     #endif
     return ss
   }
   
   override public func setup() {
     
-    #if os(iOS)
-      view.setTransparentBackground()
-    #endif
-    
-    
-    
-    view.setContentHuggingPriority(.defaultHigh, for: .vertical)
+    self.collectionView.backgroundColor = Color(hex: 0xF3F3F3)
+
+    // FIXME: should I keep this?
+    // view.setContentHuggingPriority(.defaultHigh, for: .vertical)
     
     // view.myLayer.backgroundColor = Color.purple.cgColor
 
@@ -73,10 +66,19 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     
   }
   
+  /** This is required in order to get the collectionView to size properly in containers */
+  #if os(macOS)
+  override public func viewDidLayout() {
+    doLayout()
+  }
+  #elseif os(iOS)
   override public func viewDidLayoutSubviews() {
-    
-    print("did layout subviews", self.view.frame)
-    let s = self.intrinsicContentSize( (self.view as! CollectionView).contentSize)
+    doLayout()
+  }
+  #endif
+  
+  func doLayout() {
+    let s = self.intrinsicContentSize( self.scrollView.contentSize)
     if let c = self.widthConstraint {
       c.constant = s.width
     } else {
@@ -105,8 +107,17 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     /** This is required because the superclass (which is a UIScrollKit) enables
         the pan gesture when the view will appear -- so I need to disable it to prevent
         'scroll within scroll' */
-    (self.view as! CollectionView).panGestureRecognizer.isEnabled = false
-    (self.view as! CollectionView).isScrollEnabled = false
+    // self.scrollView.panGestureRecognizer.isEnabled = false
+    
+    #if os(iOS)
+    self.scrollView.isScrollEnabled = false
+    #endif
+    
+    #if os(macOS)
+    self.scrollView.verticalScrollElasticity = .none
+      self.scrollView.userInteractionEnabled = false
+    #endif
+    
   }
   
   // section 1 is optical, section 2 is sunglasses?
@@ -145,8 +156,6 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     // FIXME: I did this in order to round to the nearest integer in case this was causing
     // the minor shift of the collection items.
     size.width = floor(size.width + 1)
-    
-    // return CGSize(width: 100, height: 20)
     return size
   }
   
@@ -166,24 +175,7 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
 
 public class TagView : CollectionReusableView<String> {
   public var lab = Label()
-  
-/*  override public var isHidden : Bool {
-    get { return super.isHidden }
-    set {
-      print("tagview isHidden = \(newValue)")
-      super.isHidden = newValue
-    }
-  } */
-  
-  /*override public func viewDidUnhide() {
-    print("viewDidUnhide")
-  }
-  
-  override public func viewDidHide() {
-    print("viewDidHide")
-    self.isHidden = false // .viewDidHide()
-  } */
-  
+
   override public func setup() {
     // lab.myLayer.backgroundColor = Color.orange.cgColor
     lab.font = textFont
