@@ -20,9 +20,11 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
       has the effect of  passing the scrolling to the next higher scrolling view */
   /* FIXME:  in the event that I want to handle the scrolling myself, I might need
      to do something else */
+  #if os(macOS)
   public override func scrollWheel(with event: Event) {
     self.nextResponder?.scrollWheel(with: event)
   }
+  #endif
   
   convenience public init(tags ts : Set<String>) {
     self.init()
