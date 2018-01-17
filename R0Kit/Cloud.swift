@@ -56,46 +56,59 @@ public func findZone(_ db : CKDatabase, _ nam : String) -> CKRecordZoneID? {
   return rz
 }
 
-public func checkiCloudLogin(_ fn : @escaping () -> Void) {
-  // var isLoggedIn = false
+public var loggedIn : Bool = false
 
+public func checkiCloudLogin(_ fn : @escaping () -> Void) {
+  
   // let testingNotLoggedIn = false
   CKContainer.default().accountStatus { accountStatus, error in
-    if accountStatus == .noAccount /* || testingNotLoggedIn */ {
-      
-      //  DispatchQueue.global().asyncAfter(deadline: .now() + 0.2) {
+    switch accountStatus {
+    case .noAccount:
       DispatchQueue.main.async {
         #if os(macOS)
-          let urlString = "x-apple.systempreferences:com.apple.preferences.icloud?iCloud"
-          NSWorkspace.shared.open(URL(string:urlString)!)
+          let z = Application.shared.orderedWindows.first
         #elseif os(iOS)
-          UIApplication.shared.open(URL(string:UIApplicationOpenSettingsURLString)!)
+          let z = Application.shared.windows.first
         #endif
-    
-      #if os(macOS)
-      let z = Application.shared.orderedWindows.first
-        #elseif os(iOS)
-      let z = Application.shared.windows.first
-        #endif
-      
-      if let _ = z {
-      } else {
-        os_log("window reference was null.  I'm going to crash now", type: .error)
-      }
-      raiseAlert(title: "Sign in to iCloud", message: "This app uses iCloud features to store and share data securely.  Please sign in to your iCloud account.  If you don't have an iCloud account, please create one", window: z!) {
-        DispatchQueue.main.async {
-          checkiCloudLogin(fn)
+        
+        if let _ = z {
+        } else {
+          os_log("window reference was null.  I'm going to crash now", type: .error)
+        }
+
+        raiseAlert(title: "Sign in to iCloud", message: "This app uses iCloud features to store and share data securely.  Please sign in to your iCloud account.  If you don't have an iCloud account, please create one", window: z!) {
+          DispatchQueue.main.async {
+            checkiCloudLogin {
+              if !loggedIn {
+                goToSettings()
+              }
+            }
+          }
         }
       }
-      } }
-    else if accountStatus == CKAccountStatus.available {
-      // let q = DispatchSemaphore(value: 0)
-      
-      // isLoggedIn = true
+    case .available:
+      loggedIn = true
       fn()
-    }
+    
+    default:
+      Notification.statusUpdate("Received unknown iCloud status")
+    
     }
   }
+}
 
+public func goToSettings() {
+  #if os(macOS)
+    let urlString = "x-apple.systempreferences:com.apple.preferences.icloud?iCloud"
+    NSWorkspace.shared.open(URL(string:urlString)!)
+  #elseif os(iOS)
+    let urlString = UIApplicationOpenSettingsURLString
+    // let urlString = "app-prefs:root=ACCOUNT_SETTINGS"
+    UIApplication.shared.open(URL(string: urlString)!, options: [ : ],
+                              completionHandler: { stat in
+                                // print("switch to settings status", stat)
+    })
+  #endif
 
+}
 

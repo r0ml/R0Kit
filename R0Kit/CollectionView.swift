@@ -337,8 +337,8 @@ open class CollectionViewController<U, T : CollectionReusableView<U> > : ViewCon
   #elseif os(iOS)
   
   
-    public static func addToMenu() {
-    }
+   /* public static func addToMenu() {
+    } */
   
   /*
   public func supplementaryHeader<Y, Z : CollectionReusableView<Y>>(_ fn: @escaping (Z, IndexPath) -> Void) {
