@@ -421,6 +421,12 @@ extension GestureRecognizer {
       set { self.alphaValue = newValue }
     }
     
+    public var transform : CGAffineTransform {
+      get { let at = self.myLayer.transform
+        return CGAffineTransform(a: at.m11, b: at.m12, c: at.m21, d: at.m22, tx: at.m41, ty: at.m42)
+      }
+      set { self.myLayer.setAffineTransform(newValue) }
+    }
     /* public func setTransparentBackground() {
      // self.drawsBackground = false
      self.backgroundColor = Color.clear
