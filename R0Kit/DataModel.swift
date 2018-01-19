@@ -149,11 +149,21 @@ public class DataCache<T : DataModel> : NSObject {
   }
   
   public func cache(_ v : T?) {
-    if let v = v  {
-      let k = v.getKey()
-      let riq = _singleton.index(forKey: k) == nil
-      _singleton[k] = v
+    if var v = v  {
+      var riq : Bool = false
 
+      // This bit of business is required in order make sure that the records will
+      // be saveable to iCloud
+      let k = v.getKey()
+      if let old = _singleton[k] {
+        riq = false
+        if v.encodedSystemFields == nil {
+          v.encodedSystemFields = old.encodedSystemFields
+        }
+      } else {
+        riq = true
+      }
+      _singleton[k] = v
       self.save()
 
       // this creates a notification so that views that depend on this model can update themselves
@@ -305,6 +315,8 @@ public class DataCache<T : DataModel> : NSObject {
    }
    */
 }
+
+// FIXME:  Turn me into a class so I can have encodedSystemFields as a stored value
 
 // To be Codable into a Record, I want to know the key (used for the RecordName)
 // I will store encodedSystemFields in order to sync with the iCloud storage -- but the Codable/Decodable

@@ -116,8 +116,8 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     #endif
     
     #if os(macOS)
-    self.scrollView.verticalScrollElasticity = .none
-      self.scrollView.userInteractionEnabled = false
+      self.scrollView.verticalScrollElasticity = .none
+     // self.scrollView.userInteractionEnabled = false
     #endif
     
   }
@@ -173,6 +173,9 @@ public class TagFieldController : CollectionViewController<String, TagView>, Col
     return 2
   }
   
+  override public func collectionView(_ collectionView: CollectionView, didSelectItemAt indexPath: IndexPath) {
+    print("tag list view selected \(indexPath)")
+  }
 }
 
 public class TagView : CollectionReusableView<String> {

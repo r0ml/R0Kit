@@ -267,7 +267,7 @@
       return Image.init(named: named, in: bundle, compatibleWith: nil)
     }
     
-    func scaledTo(_ newSize:CGSize? = nil) -> Image {
+    func scaledTo(_ newSize:CGSize? = nil) -> Image? {
       if let newSize = newSize {
         let ow = self.size.width
         let oh = self.size.height
@@ -281,7 +281,8 @@
         
         UIGraphicsBeginImageContextWithOptions(CGSize(width: cw, height: ch), false, 0.0);
         self.draw(in: CGRect(origin: CGPoint.zero, size: CGSize(width: cw, height: ch)))
-        let newImage:UIImage = UIGraphicsGetImageFromCurrentImageContext()!
+        // I got a nil here
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return newImage
       } else {
@@ -755,7 +756,7 @@ extension Image {
       var z = self.scaledTo(v.bounds.size)
       // bottom and top are reversed
       if let d = direction { v.slideIn(direction: d)  } // left, right bottom
-      if reflect { z = z.flipped()
+      if reflect { z = z?.flipped()
         // Image.init(cgImage: z.cgImage!, scale: 1.0, orientation: UIImageOrientation.upMirrored)
       }
       // v.transform = CGAffineTransform(scaleX: -1, y: 1) }
