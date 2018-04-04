@@ -5,9 +5,12 @@ import CloudKit
 // E.g. if there is a network failure when the change is made, I need to
 // queue up the changes for when the network is re-established.
 
-public class DataCache<T : DataModel> : NSObject {
+public class DataCache<T : DataModel> {
   var _singleton : [String : T] = [:]
   public var rootID: CKRecordID!
+  
+  public init() {
+  }
   
   public subscript(index:String) -> T? {
     get { return _singleton[index] }
@@ -69,15 +72,13 @@ public class DataCache<T : DataModel> : NSObject {
   }
   
   public func save() {
-    // This notification is really just for updating a status line to indicate that a save was attempted.
     if !queued {
       queued = true
       myQ.asyncAfter(deadline: .now() + 1.0) {
         self.queued = false
 
-    
-    
-    Notification.statusUpdate("\(self.singleton.count) \(T.name) saved")
+  // This notification is really just for updating a status line to indicate that a save was attempted.
+   Notification.statusUpdate("\(self.singleton.count) \(T.name) saved")
     
     let fnam = T.filename
     let g = fnam.deletingLastPathComponent()
@@ -215,10 +216,7 @@ public class DataCache<T : DataModel> : NSObject {
     // FIXME
     // I could collect all the operations from the above operations, and add them as dependencies
     // for what comes next.
-    
     T.uploadRelated(dbx, zonid)
-    
-    
   }
   
   func modifyRecords(_ dbx : CKDatabase, _ tux : [CKRecord] ) {
@@ -321,12 +319,17 @@ public class DataCache<T : DataModel> : NSObject {
 // To be Codable into a Record, I want to know the key (used for the RecordName)
 // I will store encodedSystemFields in order to sync with the iCloud storage -- but the Codable/Decodable
 // wants to treat that specially
+
 public protocol DataModel : Codable {
   // return the key from the object
   func getKey() -> String
   static var name : String { get }
   var encodedSystemFields : Data? { get set }
   static func downloadFromAPI()
+  
+  // FIXME: Rather than a single (static) DataCache --
+  // there should be a dictionary of DataCaches; One per share
+  // That way, I can switch between the two?
   static var base : DataCache<Self> { get }
   
   // for things with "external" related data (external references)
@@ -336,9 +339,6 @@ public protocol DataModel : Codable {
   static func downloadRelated(_ : CKDatabase, _ : CKRecordZoneID)
 }
 
-// the local data is stored on a file and retrieved therefrom.
-// in order to support Playgrounds, I use a special filename in the Shared Playground Data folder
-// Somebody needs to put a copy of the required data into that folder, since Playgrounds cannot access CloudKit
 extension DataModel {
   public static var values : [Self] {
     return Array(base._singleton.values)
@@ -356,6 +356,9 @@ extension DataModel {
     } }
   }
   
+  // the local data is stored on a file and retrieved therefrom.
+  // in order to support Playgrounds, I use a special filename in the Shared Playground Data folder
+  // Somebody needs to put a copy of the required data into that folder, since Playgrounds cannot access CloudKit
   public static var playgroundFilename : URL { get {
     let nsu = NSUserName()
     return URL(fileURLWithPath: "/Users/\(nsu)/Documents/Shared Playground Data/\(name)")
