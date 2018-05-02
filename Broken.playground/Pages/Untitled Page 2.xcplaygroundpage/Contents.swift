@@ -9,3 +9,4 @@ NSScreen.main?.backingScaleFactor
 NSScreen.screens.map { print($0.backingScaleFactor) }
 
 NSScreen.screens
+

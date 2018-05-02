@@ -80,12 +80,10 @@ extension CKAsset {
   }
   
   public convenience init(image: Image, size: CGSize? = nil) {
-    if let ii = image.scaledTo(size) {
+    let ii = image.scaledTo(size) 
       let fileURL = ii.saveToDisk()
       self.init(fileURL: fileURL)
-    } else {
-      self.init(data: Data())
-    }
+    
   }
   
   public var image: Image? {

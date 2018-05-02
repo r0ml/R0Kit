@@ -3,10 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E7193941208563D90079589D /* Menu.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7193940208563D90079589D /* Menu.swift */; };
 		E721DF5820088E140086B9CD /* UIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E721DF5720088E140086B9CD /* UIExtensions.swift */; };
 		E721DF5A2008921F0086B9CD /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E721DF592008921F0086B9CD /* ViewExtensions.swift */; };
 		E73873FB1FC9F9B8009C3C28 /* HTMLEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */; };
@@ -39,6 +40,7 @@
 
 /* Begin PBXFileReference section */
 		E701E0811FDBAC87006FE884 /* R0Kit.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = R0Kit.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		E7193940208563D90079589D /* Menu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Menu.swift; sourceTree = "<group>"; };
 		E721DF5720088E140086B9CD /* UIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIExtensions.swift; sourceTree = "<group>"; };
 		E721DF592008921F0086B9CD /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		E73873FA1FC9F9B8009C3C28 /* HTMLEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLEncoder.swift; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				E73873FC1FC9F9C6009C3C28 /* HTMLDecoder.swift */,
 				E79E52AA1FBFA1E500FCAD98 /* TagListView.swift */,
 				E7CD96EA1FD9E01C0098D603 /* CollectionView.swift */,
+				E7193940208563D90079589D /* Menu.swift */,
 				E79E52AC1FBFA1E500FCAD98 /* XUI.swift */,
 				E721DF592008921F0086B9CD /* ViewExtensions.swift */,
 				E79E52A81FBFA1E400FCAD98 /* XOS.swift */,
@@ -230,6 +233,7 @@
 		E79E52831FBF9F9300FCAD98 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				CLASSPREFIX = R0;
 				LastSwiftUpdateCheck = 0910;
 				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = Semasiology;
@@ -245,7 +249,7 @@
 				};
 			};
 			buildConfigurationList = E79E52861FBF9F9300FCAD98 /* Build configuration list for PBXProject "R0Kit" */;
-			compatibilityVersion = "Xcode 8.0";
+			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -297,6 +301,7 @@
 				E721DF5A2008921F0086B9CD /* ViewExtensions.swift in Sources */,
 				E73C6FED1FBFD05D009B0D7F /* RecordDecoder.swift in Sources */,
 				E79E52B61FBFA21300FCAD98 /* DataModel.swift in Sources */,
+				E7193941208563D90079589D /* Menu.swift in Sources */,
 				E79E52AF1FBFA1E600FCAD98 /* XOS.swift in Sources */,
 				E73C6FEF1FC09134009B0D7F /* RecordEncoder.swift in Sources */,
 				E79E52B71FBFA21300FCAD98 /* Transcript.swift in Sources */,
@@ -379,6 +384,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_COMPILATION_MODE = singlefile;
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/R0Kit/iphoneos";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/R0Kit/iphonesimulator";
 				"SWIFT_INCLUDE_PATHS[sdk=macosx*]" = "$(SRCROOT)/R0Kit/macosx";
@@ -438,10 +444,11 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator";
+				SWIFT_COMPILATION_MODE = wholemodule;
 				"SWIFT_INCLUDE_PATHS[sdk=iphoneos*]" = "$(SRCROOT)/R0Kit/iphoneos";
 				"SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]" = "$(SRCROOT)/R0Kit/iphonesimulator";
 				"SWIFT_INCLUDE_PATHS[sdk=macosx*]" = "$(SRCROOT)/R0Kit/macosx";
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				VALID_ARCHS = "arm64 armv7 armv7s i386 x86_64";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -462,7 +469,11 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = R0Kit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.r0ml.R0Kit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -485,7 +496,11 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = R0Kit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.r0ml.R0Kit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -502,7 +517,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = MHEBPE6SV2;
 				INFOPLIST_FILE = R0KitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.r0ml.R0KitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
@@ -517,7 +536,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = MHEBPE6SV2;
 				INFOPLIST_FILE = R0KitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.r0ml.R0KitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;

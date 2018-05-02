@@ -190,7 +190,7 @@ public class DataCache<T : DataModel> {
     var candidates = singleton
     
     // FIXME:  am I keeping track of which records have been locally modified -- and only uploading those?
-    let tux : [CKRecord] = candidates.values.flatMap { (_ m : T) -> CKRecord? in
+    let tux : [CKRecord] = candidates.values.compactMap { (_ m : T) -> CKRecord? in
       // at one time, the record encoder returned an array of records to support the ORM-like notion that
       // an object could have master/detail records.
       // Now the mapping is: one object = one record.

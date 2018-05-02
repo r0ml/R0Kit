@@ -325,10 +325,11 @@
 public class ClosX : NSObject {
   // I need to hang on to the objs to keep them for the ObjC machinery.
   // Swift can't tell that they must not be garbage collected
-  static var objs = [ClosX]()
+  // FIXME: everything is broken until I change their use of closX
+  // static var objs = [ClosX]()
   let fn : ((AnyObject?)->Void)
   public var selector : Selector { return #selector(ClosX.method(_:)) }
-  public init(_ fn : @escaping (AnyObject?)->Void) { self.fn = fn; super.init(); ClosX.objs.append(self) }
+  public init(_ fn : @escaping (AnyObject?)->Void) { self.fn = fn; super.init() /* ;  ClosX.objs.append(self) */ }
   @objc public func method(_ x : AnyObject?) {
     fn(x)
   }
@@ -386,16 +387,7 @@ extension GestureRecognizer {
     }
     print("done")
   }
-  
-  extension NSMenuItem {
-    public static func new(withTitle: String, keyEquivalent: String, _ fn: @escaping (AnyObject?) -> Void) -> NSMenuItem {
-      let x = ClosX(fn)
-      let nmi = NSMenuItem(title: withTitle, action: x.selector, keyEquivalent: keyEquivalent)
-      nmi.target = x
-      return nmi
-    }
-  }
-  
+
   extension NSView {
     
     open var myLayer: CALayer {
@@ -588,6 +580,34 @@ extension GestureRecognizer {
       }
     }
     
+    // This is the same as "scaledTo" below -- except it doesn't try to preserve aspect ratio
+    func resize(withSize targetSize: NSSize) -> NSImage? {
+      let frame = NSRect(x: 0, y: 0, width: targetSize.width, height: targetSize.height)
+      guard let representation = self.bestRepresentation(for: frame, context: nil, hints: nil) else {
+        return nil
+      }
+      let image = NSImage(size: targetSize, flipped: false, drawingHandler: { (_) -> Bool in
+        return representation.draw(in: frame)
+      })
+      
+      return image
+    }
+    
+    func resizeMaintainingAspectRatio(withSize targetSize: NSSize) -> NSImage? {
+      let newSize: NSSize
+      let widthRatio  = targetSize.width / self.size.width
+      let heightRatio = targetSize.height / self.size.height
+      
+      if widthRatio > heightRatio {
+        newSize = NSSize(width: floor(self.size.width * widthRatio),
+                         height: floor(self.size.height * widthRatio))
+      } else {
+        newSize = NSSize(width: floor(self.size.width * heightRatio),
+                         height: floor(self.size.height * heightRatio))
+      }
+      return self.resize(withSize: newSize)
+    }
+
     func scaledTo(_ newSize:CGSize? = nil) -> Image {
       if let newSize = newSize {
         let ow = self.size.width
@@ -756,7 +776,7 @@ extension Image {
       var z = self.scaledTo(v.bounds.size)
       // bottom and top are reversed
       if let d = direction { v.slideIn(direction: d)  } // left, right bottom
-      if reflect { z = z?.flipped()
+      if reflect { z = z.flipped()
         // Image.init(cgImage: z.cgImage!, scale: 1.0, orientation: UIImageOrientation.upMirrored)
       }
       // v.transform = CGAffineTransform(scaleX: -1, y: 1) }
