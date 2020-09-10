@@ -41,7 +41,7 @@ extension CGPoint {
   }
 
   // tests if a I am Left|On|Right of an infinite line.
-  func isLeft(_ p0 : CGPoint, _ p1 : CGPoint) -> CGFloat {
+  public func isLeft(_ p0 : CGPoint, _ p1 : CGPoint) -> CGFloat {
     //    Input:  three points P0, P1, and P2
     //    Return: >0 for P2 left of the line through P0 and P1
     //            =0 for P2  on the line
@@ -55,7 +55,7 @@ extension CGPoint {
   //               V[] = vertex points of a polygon V[n+1] with V[n]=V[0]
   //      Return:  wn = the winding number (=0 only when P is outside)
 
-  func contained( in vv : [CGPoint] ) -> Bool {
+  public func contained( in vv : [CGPoint] ) -> Bool {
     var wn : Int = 0    // the  winding number counter
     let v = vv + [vv[0]]
     let eps = CGFloat(1e-10)
