@@ -7,6 +7,7 @@ let package = Package(
     name: "R0Kit",
   platforms: [
       .macOS(.v11),
+    .iOS(.v14),
   ],
 
     products: [
