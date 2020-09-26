@@ -2,7 +2,7 @@
 // Found amongst his effects by r0ml
 
 import Foundation
-import Combine
+@_exported import Combine
 
 public enum HTTPError : LocalizedError {
   case statusCode(Int)
