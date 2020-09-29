@@ -28,13 +28,13 @@ extension NSImage {
     self.addRepresentation(rep)
   }
 
-  public var pngData : Data? { get {
+  // I would have preferred a variable, but this matches the UIImage implementation
+  public func pngData() -> Data? {
     guard let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
     let newRep = NSBitmapImageRep(cgImage: cgImage)
     newRep.size = self.size
     guard let pngd = newRep.representation(using: .png, properties: [:]) else { return nil }
     return pngd
-  }
   }
 
   public var ciImage : CIImage?  {
