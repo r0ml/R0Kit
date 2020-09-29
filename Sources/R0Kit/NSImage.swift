@@ -1,7 +1,8 @@
 // Copyright (c) 1868 Charles Babbage
 // Found amongst his effects by r0ml
 
-#if os(macOS)
+#if canImport(AppKit)
+
 import AppKit
 import CoreGraphics
 
@@ -26,4 +27,5 @@ extension NSImage {
   }
 
 }
+
 #endif
