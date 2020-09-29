@@ -20,9 +20,9 @@ extension NSImage {
     self.unlockFocus()
   }
 */
-  
+
   // Create an NSImage from a CIImage
-  convenience init(ciImage im : CIImage) {
+  public convenience init(ciImage im : CIImage) {
     let rep = NSCIImageRep(ciImage: im)
     self.init(size: rep.size)
     self.addRepresentation(rep)
