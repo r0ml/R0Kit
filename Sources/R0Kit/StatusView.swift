@@ -32,12 +32,12 @@ extension Notification {
 
       }
       let noti = Notification( name: .reportError, object: nil, userInfo: ["msg":m, "err": mmm])
-      NotificationCenter.default.post(noti)
+      DispatchQueue.main.async { NotificationCenter.default.post(noti) }
     }
   }
   public static func reportError(_ m : String, _ e : String) {
     let noti = Notification( name: .reportError, object: nil, userInfo: ["msg":m, "err": e])
-    NotificationCenter.default.post(noti)
+    DispatchQueue.main.async { NotificationCenter.default.post(noti) }
   }
 }
 
