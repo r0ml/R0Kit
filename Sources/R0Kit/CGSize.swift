@@ -68,3 +68,12 @@ extension CGSize : AdditiveArithmetic {
 
 
 }
+
+// -------------------------------------------------------
+// Size arithmetic with CGRect
+extension CGSize {
+  public static func *(s: CGSize, b: CGRect) -> CGRect {
+    return CGRect(x: b.minX * s.width, y: b.minY * s.height, width: b.width * s.width, height: b.height * s.height)
+  }
+
+}
