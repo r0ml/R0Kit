@@ -3,10 +3,10 @@
 
 import SwiftUI
 
-/// This extension adds the abilkity to specify conditional modifiers 
+/// This extension adds the abilkity to specify conditional modifiers
 extension View {
   
-  @ViewBuilder func modifier<TrueContent: View>(
+  @ViewBuilder public func modifier<TrueContent: View>(
     if condition: Bool,
     then trueContent: (Self) -> TrueContent
   ) -> some View {
@@ -17,7 +17,7 @@ extension View {
     }
   }
   
-  @ViewBuilder func modifier<TrueContent: View, FalseContent: View>(
+  @ViewBuilder public func modifier<TrueContent: View, FalseContent: View>(
     if condition: Bool,
     then trueContent: (Self) -> TrueContent,
     else falseContent: (Self) -> FalseContent
