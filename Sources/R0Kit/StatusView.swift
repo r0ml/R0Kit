@@ -16,14 +16,14 @@ extension Notification.Name {
 
 extension Notification {
   public static func reportStatus(_ m : String) {
-    log.info("\(m)")
+    localLog.info("\(m)")
     let noti = Notification( name: .reportStatus, object: nil, userInfo: ["msg":m])
     DispatchQueue.main.async { NotificationCenter.default.post(noti) }
   }
 
   public static func reportError(_ m : String, _ err : Error?) {
     if let e = err {
-      log.error("\(m) \(e.localizedDescription)")
+      localLog.error("\(m) \(e.localizedDescription)")
       var mmm = e.localizedDescription
       if let ee = e as? CKError {
         if let mm = ee.userInfo["NSUnderlyingError"] as? NSError {
