@@ -14,6 +14,6 @@ public class LoggingOutputStream : TextOutputStream {
   }
 
   public func write(_ string : String) {
-    if debugging { log.debug("\(string)") }
+    if debugging { localLog.debug("\(string)") }
   }
 }
