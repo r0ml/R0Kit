@@ -14,6 +14,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "R0Kit",
+            type: .dynamic,
             targets: ["R0Kit"]),
     ],
     dependencies: [

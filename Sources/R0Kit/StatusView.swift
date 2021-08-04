@@ -7,7 +7,7 @@ import SwiftUI
 import Combine
 import os
 
-fileprivate let log = Logger()
+fileprivate let localLog = Logger()
 
 extension Notification.Name {
   public static let reportStatus = Notification.Name(rawValue: "reportStatus" )

@@ -10,8 +10,7 @@ extension CGPoint {
   }
 }
 
-
-extension CGPoint : AdditiveArithmetic {
+extension CGPoint {
 
   // -----------------------------------------------------------
   // Arithmetic between points

@@ -3,7 +3,7 @@
 
 import os
 
-fileprivate let log = Logger()
+fileprivate let localLog = Logger()
 
 // useful when a TextOutputStream needs to be conditionally disabled
 public class LoggingOutputStream : TextOutputStream {
